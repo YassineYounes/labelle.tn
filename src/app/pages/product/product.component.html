@@ -1,0 +1,228 @@
+<nav class="breadcrumb-bar">
+  <div class="container breadcrumb-inner">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a [routerLink]="product().link"><span>{{ product().name }}</span></a></li>
+    </ol>
+    <div class="next-product-button">
+      <a class="btn-next" [routerLink]="nextProduct().link">
+        <span>Prochain</span>
+        <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.5 1L6.5 6L1.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </a>
+      <div class="product-button-hover">
+        <a [routerLink]="nextProduct().link">
+          <img [src]="nextProduct().image" [alt]="nextProduct().name" />
+        </a>
+        <a [routerLink]="nextProduct().link">
+          <span class="product-name">{{ nextProduct().name }}</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container product-main">
+  <div class="product-row">
+    <div class="product-col">
+      <div class="images-container">
+        <div class="thumbs-mask">
+          <ul class="product-images">
+            <li class="thumb-container selected">
+              <img class="thumb" [src]="product().largeImage" [alt]="product().name" />
+            </li>
+          </ul>
+        </div>
+        <div class="product-cover">
+          <img class="cover-image" [src]="product().largeImage" [alt]="product().name" />
+          <div class="wishlist-hook" title="Ajouter à ma liste de souhaits">
+            <svg width="22" height="22" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M24.125 7.65625C24.125 4.44646 21.4138 1.84375 18.0697 1.84375C15.5703 1.84375 13.4235 3.29817 12.5 5.37387C11.5765 3.29817 9.42971 1.84375 6.92904 1.84375C3.5875 1.84375 0.875 4.44646 0.875 7.65625C0.875 16.9821 12.5 23.1562 12.5 23.1562C12.5 23.1562 24.125 16.9821 24.125 7.65625Z"
+                stroke="#3A3A3A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="compare-hook" title="Comparer">
+            <svg width="22" height="22" viewBox="0 0 27 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M13.5 0.875V23.1562M13.5 23.1562C11.7213 23.1562 10.0176 23.4985 8.44313 24.125M13.5 23.1562C15.2787 23.1562 16.9824 23.4985 18.5569 24.125M21.6563 3.41958C18.9541 3.01414 16.2287 2.81128 13.5 2.8125C10.7317 2.8125 8.00813 3.01917 5.34375 3.41958M21.6563 3.41958C22.8767 3.60429 24.085 3.82904 25.2813 4.09125M21.6563 3.41958L24.8221 17.274C24.9695 17.9185 24.694 18.6018 24.1104 18.8266C23.3231 19.1286 22.4927 19.2825 21.6563 19.2812C20.8198 19.2825 19.9894 19.1286 19.2021 18.8266C18.6185 18.6018 18.343 17.9185 18.4892 17.274L21.6563 3.42088V3.41958ZM5.34375 3.41958C4.12333 3.60429 2.915 3.82904 1.71875 4.09125M5.34375 3.41958L8.50958 17.274C8.657 17.9185 8.3815 18.6018 7.79788 18.8266C7.01056 19.1286 6.18023 19.2824 5.34375 19.2812C4.50727 19.2824 3.67694 19.1286 2.88963 18.8266C2.306 18.6018 2.0305 17.9185 2.17671 17.274L5.34375 3.42088V3.41958Z"
+                stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-col product-page-right">
+      <h1 class="product-h1">{{ product().name }}</h1>
+      <div class="product-reference">
+        <label>Référence : </label>
+        <span>{{ product().reference }}</span>
+      </div>
+      <div class="product-prices">
+        <div class="current-price">{{ product().price }}</div>
+      </div>
+      <div class="comments-note">
+        <a (click)="setTab('comments')">
+          <div class="star-content">
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+          </div>
+          <span>0 avis(s)</span>
+        </a>
+      </div>
+
+      <div class="product-information">
+        @for (line of product().shortDescription; track line) {
+          <p>{{ line }}</p>
+        }
+      </div>
+
+      <div class="product-quantity">
+        <div class="qty">
+          <span class="control-label">Quantité :</span>
+          <input type="text" [value]="quantity()" readonly aria-label="Quantité" />
+          <div class="qty-buttons">
+            <button type="button" (click)="increment()" aria-label="Augmenter">+</button>
+            <button type="button" (click)="decrement()" aria-label="Diminuer">-</button>
+          </div>
+        </div>
+
+        <div class="product-tab-review-wrapper">
+          <a class="ask-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="#3a3a3a" stroke-width="1.5" />
+              <path d="M9.5 9.5C9.5 8 10.5 7 12 7C13.5 7 14.5 8 14.5 9.5C14.5 11 13 11.3 12.3 12.2C12 12.6 12 13 12 13.5"
+                stroke="#3a3a3a" stroke-width="1.5" stroke-linecap="round" />
+              <circle cx="12" cy="16.5" r="1" fill="#3a3a3a" />
+            </svg>
+            <span>Poser une question</span>
+          </a>
+          <a class="review-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 21L4.5 16.5L15.5 5.5C16.3 4.7 17.7 4.7 18.5 5.5C19.3 6.3 19.3 7.7 18.5 8.5L7.5 19.5L3 21Z"
+                stroke="#3a3a3a" stroke-width="1.5" stroke-linejoin="round" />
+            </svg>
+            <span>Ecrire une critique</span>
+          </a>
+        </div>
+
+        @if (product().stock > 0) {
+          <div class="stock-countdown">
+            <p class="stock-countdown-title">
+              Dépêchez-vous! Seulement
+              <span>{{ product().stock }}</span>
+              En stock!
+            </p>
+            <div class="stock-countdown-range">
+              <div class="stock-countdown-progress" [style.width.%]="stockPercent()"></div>
+            </div>
+          </div>
+        }
+
+        @if (product().stock === 1) {
+          <span class="product-availability last-items">
+            <svg width="18" height="16" viewBox="0 0 24 21" fill="#ff9a52" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 0L24 21H0L12 0ZM11 8V14H13V8H11ZM11 16V18H13V16H11Z" />
+            </svg>
+            Derniers articles en stock
+          </span>
+        } @else if (product().stock === 0) {
+          <span class="product-availability unavailable">Rupture de stock</span>
+        }
+
+        <div class="add-row">
+          <button class="btn-primary add-to-cart" type="button" [disabled]="product().stock === 0">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 9V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5V9M2 7H16L17 19H1L2 7Z" stroke="#fff"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Ajouter au panier
+          </button>
+          <a class="btn-bonorder">
+            <svg width="18" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M14 14L12 19L7.99995 8L19 12L14 14ZM14 14L19 19M6.18818 1.23853L6.96464 4.1363M4.13618 6.96472L1.2384 6.18826M12.9497 3.05029L10.8283 5.17161M5.17158 10.8284L3.05026 12.9497"
+                stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span>Etre rappelé</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="social-sharing">
+        <span>Partager sur :</span>
+        <ul>
+          <li class="facebook">
+            <a href="https://www.facebook.com/sharer.php" target="_blank" aria-label="Partager sur Facebook">
+              <svg width="10" height="18" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M9.16667 0.916665C9.16667 0.806159 9.12277 0.700178 9.04463 0.622038C8.96649 0.543898 8.86051 0.499999 8.75 0.499999H6.66667C5.6176 0.447741 4.5905 0.812825 3.80977 1.51548C3.02904 2.21814 2.55815 3.20125 2.5 4.25V6.5H0.416667C0.30616 6.5 0.200179 6.5439 0.122039 6.62204C0.0438988 6.70018 0 6.80616 0 6.91667V9.08333C0 9.19384 0.0438988 9.29982 0.122039 9.37796C0.200179 9.4561 0.30616 9.5 0.416667 9.5H2.5V15.0833C2.5 15.1938 2.5439 15.2998 2.62204 15.378C2.70018 15.4561 2.80616 15.5 2.91667 15.5H5.41667C5.52717 15.5 5.63315 15.4561 5.71129 15.378C5.78943 15.2998 5.83333 15.1938 5.83333 15.0833V9.5H8.01667C8.10932 9.50133 8.19978 9.47173 8.27374 9.41589C8.34769 9.36005 8.40092 9.28115 8.425 9.19167L9.025 7.025C9.04158 6.96343 9.04381 6.89889 9.03151 6.83632C9.01922 6.77376 8.99273 6.71486 8.95409 6.66414C8.91545 6.61343 8.86569 6.57226 8.80864 6.5438C8.75158 6.51534 8.68876 6.50036 8.625 6.5H5.83333V4.25C5.85406 4.04373 5.95093 3.85259 6.10502 3.71391C6.25911 3.57523 6.45936 3.49896 6.66667 3.5H8.75C8.86051 3.5 8.96649 3.4561 9.04463 3.37796C9.12277 3.29982 9.16667 3.19384 9.16667 3.08333V0.916665Z"
+                  fill="#336699" />
+              </svg>
+            </a>
+          </li>
+          <li class="twitter">
+            <a href="https://twitter.com/intent/tweet" target="_blank" aria-label="Partager sur Twitter">
+              <svg width="18" height="15" viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M24 2.4C23.1 2.8 22.2 3.1 21.2 3.2C22.2 2.6 23 1.6 23.4 0.5C22.4 1.1 21.4 1.5 20.3 1.7C19.4 0.7 18.1 0.1 16.7 0.1C14 0.1 11.8 2.3 11.8 5C11.8 5.4 11.8 5.8 11.9 6.1C7.7 5.9 4.1 4 1.7 1C1.2 1.8 1 2.6 1 3.5C1 5.2 1.9 6.7 3.2 7.6C2.4 7.6 1.6 7.4 1 7V7.1C1 9.5 2.7 11.5 4.9 11.9C4.5 12 4.1 12.1 3.6 12.1C3.3 12.1 3 12.1 2.7 12C3.3 14 5.1 15.4 7.3 15.4C5.6 16.7 3.5 17.5 1.2 17.5C0.8 17.5 0.4 17.5 0 17.4C2.2 18.8 4.8 19.6 7.5 19.6C16.7 19.6 21.6 12.2 21.6 5.7V5.1C22.5 4.4 23.3 3.5 24 2.4Z"
+                  fill="#1da1f2" />
+              </svg>
+            </a>
+          </li>
+          <li class="pinterest">
+            <a href="https://www.pinterest.com/pin/create/button/" target="_blank" aria-label="Partager sur Pinterest">
+              <svg width="15" height="18" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.5 0C3.6 0 0 3.4 0 7.6C0 10.2 1.4 12.4 3.6 13.4C3.5 12.7 3.4 11.6 3.6 10.8C3.8 10 4.9 5.7 4.9 5.7C4.9 5.7 4.6 5 4.6 4.1C4.6 2.6 5.5 1.5 6.6 1.5C7.5 1.5 8 2.2 8 3C8 3.9 7.4 5.3 7.1 6.6C6.8 7.7 7.6 8.6 8.7 8.6C10.6 8.6 12.1 6.6 12.1 3.7C12.1 1.1 10.3 -0.7 7.7 -0.7C4.7 -0.7 2.9 1.6 2.9 4C2.9 4.9 3.2 5.9 3.7 6.5C3.8 6.6 3.8 6.7 3.8 6.8C3.7 7.1 3.5 7.9 3.5 8C3.4 8.2 3.3 8.3 3.1 8.2C1.6 7.5 0.7 5.4 0.7 3.9C0.7 0.6 3.1 -2.4 7.9 -2.4C11.7 -2.4 14.7 0.3 14.7 3.6C14.7 7.4 12.3 10.4 9 10.4C7.9 10.4 6.8 9.8 6.5 9.1C6.5 9.1 5.9 11.2 5.8 11.7C5.5 12.7 4.9 13.9 4.4 14.7C5.4 15 6.4 15.2 7.5 15.2C12.4 15.2 16 11.8 16 7.6C16 3.4 12.6 0 8.5 0Z"
+                  transform="translate(0 2.4)" fill="#bd081c" />
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs product-tabs">
+    <ul class="nav-tabs">
+      <li><a [class.active]="activeTab() === 'description'" (click)="setTab('description')">Description</a></li>
+      <li><a [class.active]="activeTab() === 'details'" (click)="setTab('details')">Détails du produit</a></li>
+      <li><a [class.active]="activeTab() === 'comments'" (click)="setTab('comments')">Commentaires (0)</a></li>
+    </ul>
+    <div class="tab-content">
+      @switch (activeTab()) {
+        @case ('description') {
+          <div class="tab-pane product-description">
+            @for (line of product().description; track line) {
+              <p>{{ line }}</p>
+            }
+          </div>
+        }
+        @case ('details') {
+          <div class="tab-pane">
+            <div class="details-reference">
+              <label>Référence </label>
+              <span>{{ product().reference }}</span>
+            </div>
+            <div class="details-quantities">
+              <label>En stock</label>
+              <span>{{ product().stock }} Article</span>
+            </div>
+          </div>
+        }
+        @case ('comments') {
+          <div class="tab-pane">
+            <span class="no-reviews">Ce produit n'a pas d'avis !</span>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

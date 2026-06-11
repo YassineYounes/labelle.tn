@@ -1,0 +1,140 @@
+.bonhtmlcontent {
+  overflow: hidden;
+  position: relative;
+  margin-bottom: calc(20px + 60 * ((100vw - 320px) / 1560));
+}
+
+.bonhtmlcontent-img {
+  max-width: 100%;
+  display: block;
+}
+
+.bonhtmlcontent-content {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .bonhtmlcontent-content {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: calc(5px + (100 - 5) * ((100vw - 768px) / (1880 - 768)));
+    max-width: calc(475px + (875 - 475) * ((100vw - 768px) / (1880 - 768)));
+  }
+}
+
+@media (min-width: 1881px) {
+  .bonhtmlcontent-content {
+    right: 100px;
+    max-width: 875px;
+  }
+}
+
+@media (max-width: 767px) {
+  .bonhtmlcontent-content {
+    padding: 20px 15px;
+  }
+}
+
+.box-htmlcontent p {
+  margin-bottom: 0;
+}
+
+.box-htmlcontent .h1 {
+  font-family: Jost, sans-serif;
+  font-weight: 700;
+  color: #3a3a3a;
+  display: inline-block;
+  line-height: 120%;
+  font-size: calc(25px + (202 - 25) * ((100vw - 320px) / (1880 - 320)));
+}
+
+.box-htmlcontent .h2 {
+  font-family: Condiment, cursive;
+  color: #e3a1ac;
+  font-weight: 400;
+  margin-bottom: 5px;
+  font-size: calc(20px + (62 - 20) * ((100vw - 320px) / (1880 - 320)));
+  margin-top: calc(-20 * ((100vw - 320px) / (1880 - 320)) * 1px);
+  text-align: right;
+}
+
+.box-htmlcontent .h3 {
+  color: #3a3a3a;
+  line-height: 1.55;
+  font-size: calc(14px + (28 - 14) * ((100vw - 320px) / (1880 - 320)));
+}
+
+.box-htmlcontent .h3:not(:last-child) {
+  margin-bottom: calc(8px + 12 * ((100vw - 320px) / 1560));
+}
+
+.information-htmlcontent {
+  margin-bottom: calc(10px + (55 - 10) * ((100vw - 320px) / (1880 - 320)));
+}
+
+@media (min-width: 1881px) {
+  .box-htmlcontent .h1 {
+    font-size: 202px;
+  }
+
+  .box-htmlcontent .h2 {
+    font-size: 62px;
+    margin-top: -20px;
+  }
+
+  .box-htmlcontent .h3 {
+    font-size: 28px;
+  }
+
+  .information-htmlcontent {
+    margin-bottom: 55px;
+  }
+}
+
+/* ---------- Reassurance badges ---------- */
+.bonreassurance {
+  max-width: 648px;
+  width: 100%;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(10px + (48 - 10) * ((100vw - 320px) / (1880 - 320)));
+}
+
+@media (min-width: 576px) {
+  .bonreassurance {
+    border-top: 1px solid rgb(var(--brand-primary));
+    border-bottom: 1px solid rgb(var(--brand-primary));
+  }
+}
+
+.bonreassurance-item {
+  display: flex;
+  align-items: center;
+}
+
+.bonreassurance-item:not(:last-child) {
+  margin-bottom: calc(10px + (20 - 10) * ((100vw - 320px) / (1880 - 320)));
+}
+
+.box-icon {
+  margin-right: 12px;
+  display: inline-flex;
+}
+
+.box-content {
+  color: rgb(var(--brand-primary));
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 160%;
+  font-weight: 700;
+  font-size: calc(12px + (20 - 12) * ((100vw - 320px) / (1880 - 320)));
+}
+
+@media (min-width: 1881px) {
+  .box-content {
+    font-size: 20px;
+  }
+}

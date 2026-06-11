@@ -1,0 +1,196 @@
+.bonban {
+  position: relative;
+}
+
+.bonban-content-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 -15px;
+}
+
+.bonban-images {
+  width: 100%;
+  padding: 0 15px;
+}
+
+.bonban-title-wrapper {
+  width: 100%;
+  padding: 0 15px;
+}
+
+@media (min-width: 992px) {
+  .bonban-images {
+    width: 66.666%;
+  }
+
+  .bonban-title-wrapper {
+    width: 33.333%;
+  }
+}
+
+.bonban-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.bonban-item {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .bonban-item {
+    width: 50%;
+  }
+}
+
+.bonban-link {
+  display: block;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.bonban-link img {
+  max-width: 100%;
+  display: block;
+}
+
+@media (min-width: 992px) {
+  .bonban-link:hover {
+    transform: translateY(-20px);
+  }
+}
+
+/* Text overlay inside the card artwork */
+.bonban-item-description {
+  position: absolute;
+  text-align: left;
+  top: calc(45px + (123 - 45) * ((100vw - 992px) / (1880 - 992)));
+}
+
+@media (min-width: 768px) {
+  /* the card artwork leaves the white area at a different offset on odd/even tiles */
+  .bonban-item.odd .bonban-item-description {
+    left: 25%;
+  }
+
+  .bonban-item:not(.odd) .bonban-item-description {
+    left: 9%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .bonban-item-description {
+    top: calc(55px + (75 - 55) * ((100vw - 768px) / (991 - 768)));
+  }
+}
+
+@media (max-width: 767px) {
+  .bonban-item-description {
+    top: 20%;
+    left: calc(70px + (221 - 70) * ((100vw - 320px) / (767 - 320)));
+  }
+}
+
+@media (min-width: 1881px) {
+  .bonban-item-description {
+    top: 123px;
+  }
+}
+
+.bonban-item-description .h1 {
+  font-family: Jost, sans-serif;
+  font-weight: 700;
+  color: rgb(var(--brand-primary));
+  line-height: 145%;
+  margin-bottom: 2px;
+  font-size: calc(25px + (42 - 25) * ((100vw - 320px) / (1880 - 320)));
+}
+
+.bonban-item-description .h3 {
+  font-size: 14px;
+  line-height: 150%;
+  color: #3a3a3a;
+  border-bottom: 1px solid rgb(var(--brand-primary));
+  display: inline-block;
+  max-width: 150px;
+  padding-bottom: 14px;
+  margin-top: 12px;
+}
+
+@media (min-width: 1881px) {
+  .bonban-item-description .h1 {
+    font-size: 42px;
+  }
+}
+
+/* ---------- Right title block ---------- */
+.bonban-title-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bonban-title {
+  font-family: Jost, sans-serif;
+  font-weight: 700;
+  color: rgb(var(--brand-primary));
+  line-height: 93%;
+  font-size: calc(35px + (62 - 35) * ((100vw - 320px) / (1880 - 320)));
+  margin-bottom: calc(10px + (30 - 10) * ((100vw - 320px) / (1880 - 320)));
+}
+
+.bonban-subtitle {
+  font-weight: 400;
+  color: #3a3a3a;
+  line-height: 1;
+  margin-bottom: 0;
+  font-size: calc(20px + (28 - 20) * ((100vw - 320px) / (1880 - 320)));
+}
+
+@media (min-width: 1881px) {
+  .bonban-title {
+    font-size: 62px;
+    margin-bottom: 30px;
+  }
+
+  .bonban-subtitle {
+    font-size: 28px;
+  }
+}
+
+.bonban-scroll-wrapper {
+  display: none;
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 8px;
+}
+
+@media (min-width: 992px) {
+  .bonban-scroll-wrapper {
+    display: flex;
+  }
+}
+
+.bonban-scroll {
+  writing-mode: vertical-lr;
+  font-size: 22px;
+  display: inline-block;
+  letter-spacing: 0.13em;
+  font-weight: 400;
+  margin-bottom: 30px;
+  color: rgb(var(--brand-primary));
+}
+
+/* On mobile the title moves above the cards */
+@media (max-width: 991px) {
+  .bonban-content-wrapper {
+    flex-direction: column-reverse;
+  }
+
+  .bonban-title-wrapper {
+    margin-bottom: 30px;
+  }
+}

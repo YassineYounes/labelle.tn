@@ -1,0 +1,39 @@
+<section class="bonban">
+  <div class="container">
+    <div class="bonban-content-wrapper">
+      <div class="bonban-images">
+        <ul class="bonban-grid">
+          @for (banner of banners; track banner.link; let i = $index) {
+            <li class="bonban-item" [class.odd]="i % 2 === 0">
+              <a class="bonban-link" [routerLink]="banner.link">
+                <img [src]="banner.image" [alt]="banner.alt" loading="lazy" />
+                <div class="bonban-item-description">
+                  @for (line of banner.titleLines; track line) {
+                    <p class="h1">{{ line }}</p>
+                  }
+                  <p class="h3">{{ banner.description }}</p>
+                </div>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="bonban-title-wrapper">
+        <div class="bonban-title-inner">
+          <div>
+            <p class="bonban-title">Produits les plus populaires</p>
+            <p class="bonban-subtitle">Sop votre santé et vos problèmes de peau.</p>
+          </div>
+          <div class="bonban-scroll-wrapper">
+            <span class="bonban-scroll">Défiler vers le bas</span>
+            <svg width="16" height="101" viewBox="0 0 16 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M7.29289 100.707C7.68341 101.098 8.31658 101.098 8.7071 100.707L15.0711 94.3431C15.4616 93.9526 15.4616 93.3195 15.0711 92.9289C14.6805 92.5384 14.0474 92.5384 13.6569 92.9289L8 98.5858L2.34314 92.9289C1.95262 92.5384 1.31945 92.5384 0.928928 92.9289C0.538404 93.3195 0.538404 93.9526 0.928928 94.3431L7.29289 100.707ZM7 -4.37112e-08L7 100L9 100L9 4.37112e-08L7 -4.37112e-08Z"
+                fill="rgb(219, 150, 161)" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

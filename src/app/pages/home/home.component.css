@@ -1,0 +1,3 @@
+.hero-gap {
+  height: calc(20px + 30 * ((100vw - 320px) / 1560));
+}
