@@ -1,0 +1,38 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a><span>Recherche</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Recherche</h1>
+    @if (query()) {
+      <p class="hero-script">« {{ query() }} »</p>
+    }
+    <p class="hero-intro">
+      @if (results().length > 0) {
+        {{ results().length }} résultat{{ results().length > 1 ? 's' : '' }} pour votre recherche.
+      } @else if (query()) {
+        Aucun résultat ne correspond à votre recherche.
+      } @else {
+        Utilisez la loupe dans le menu pour rechercher un produit.
+      }
+    </p>
+  </header>
+
+  @if (results().length > 0) {
+    <div class="results-grid">
+      @for (product of results(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  } @else {
+    <div class="no-results">
+      <a class="btn-primary" routerLink="/">Retour à l'accueil</a>
+    </div>
+  }
+</div>

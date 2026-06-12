@@ -1,0 +1,110 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      @for (node of breadcrumb(); track node.id) {
+        <li><a [routerLink]="node.link"><span>{{ node.name }}</span></a></li>
+      }
+    </ol>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="category-row">
+    <div class="left-column"></div>
+
+    <div class="content-column">
+      <h3 class="bon-page-title">{{ category().name }}</h3>
+
+      @if (category().children.length > 0) {
+        <div class="subcategories">
+          <h2 class="subcategory-heading">Sous-catégories</h2>
+          <ul class="subcategories-list">
+            @for (child of category().children; track child.link) {
+              <li>
+                <a class="subcategory-name" [routerLink]="child.link">{{ child.name }}</a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="products-selection">
+        <div class="total-products">
+          <span>Il y a {{ totalProducts() }} produit{{ totalProducts() > 1 ? 's' : '' }}.</span>
+        </div>
+        <div class="sort-by-row">
+          <span class="sort-by">Trier par :</span>
+          <div class="products-sort-order" [class.open]="sortOpen()">
+            <button class="select-title" type="button" (click)="toggleSort()">
+              {{ sortLabel() }}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9L12 15L18 9" stroke="rgb(219, 150, 161)" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            @if (sortOpen()) {
+              <div class="dropdown-menu">
+                @for (option of sortOptions; track option.key) {
+                  <a class="select-list" [class.current]="option.key === sortKey()" (click)="selectSort(option.key)">
+                    {{ option.label }}
+                  </a>
+                }
+              </div>
+            }
+          </div>
+          <div class="buttons-grid">
+            <button type="button" class="grid-button grid-2" [class.active]="gridColumns() === 2" (click)="setGrid(2)"
+              aria-label="2 colonnes">
+              <span></span><span></span><span></span><span></span>
+            </button>
+            <button type="button" class="grid-button grid-3" [class.active]="gridColumns() === 3" (click)="setGrid(3)"
+              aria-label="3 colonnes">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </button>
+            <button type="button" class="grid-button grid-4" [class.active]="gridColumns() === 4" (click)="setGrid(4)"
+              aria-label="4 colonnes">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="products-grid" [class.cols-2]="gridColumns() === 2" [class.cols-4]="gridColumns() === 4">
+        @for (product of pageProducts(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+
+      <nav class="pagination">
+        <div class="showing">
+          Affichage {{ showingFrom() }}-{{ showingTo() }} de {{ totalProducts() }} article(s)
+        </div>
+        @if (totalPages() > 1) {
+          <ul class="page-list">
+            @for (item of pageItems(); track $index) {
+              @if (item === '…') {
+                <li><span class="spacer">…</span></li>
+              } @else {
+                <li [class.current]="item === page()">
+                  <a class="page-number" (click)="goToPage(item)">{{ item }}</a>
+                </li>
+              }
+            }
+            @if (page() < totalPages()) {
+              <li>
+                <a class="next" (click)="goToPage(page() + 1)">
+                  Suivant
+                  <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1.5 1L6.5 6L1.5 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                      stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </nav>
+    </div>
+  </div>
+</div>

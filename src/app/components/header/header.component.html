@@ -59,7 +59,7 @@
           </button>
 
           <div class="user-info">
-            <a class="icon-btn" href="#" aria-label="Mon compte">
+            <a class="icon-btn" routerLink="/mon-compte" aria-label="Mon compte">
               <svg width="30" height="30" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M19.031 7.25C19.031 8.45176 18.5536 9.6043 17.7038 10.4541C16.8541 11.3039 15.7015 11.7812 14.4998 11.7812C13.298 11.7812 12.1455 11.3039 11.2957 10.4541C10.4459 9.6043 9.96852 8.45176 9.96852 7.25C9.96852 6.04824 10.4459 4.8957 11.2957 4.04592C12.1455 3.19615 13.298 2.71875 14.4998 2.71875C15.7015 2.71875 16.8541 3.19615 17.7038 4.04592C18.5536 4.8957 19.031 6.04824 19.031 7.25ZM5.43848 24.3092C5.47731 21.9317 6.44905 19.6646 8.14415 17.997C9.83925 16.3293 12.1219 15.3947 14.4998 15.3947C16.8777 15.3947 19.1603 16.3293 20.8554 17.997C22.5505 19.6646 23.5222 21.9317 23.5611 24.3092C20.7183 25.6128 17.6271 26.2855 14.4998 26.2812C11.2663 26.2812 8.1971 25.5756 5.43848 24.3092Z"
@@ -67,8 +67,8 @@
               </svg>
             </a>
             <div class="login-popup">
-              <a class="btn-primary login-btn" href="#">Connexion</a>
-              <a class="btn-primary login-btn" href="#">Créer un compte</a>
+              <a class="btn-primary login-btn" routerLink="/mon-compte">Connexion</a>
+              <a class="btn-primary login-btn" routerLink="/mon-compte">Créer un compte</a>
             </div>
           </div>
 
@@ -80,29 +80,54 @@
             </svg>
           </a>
 
-          <a class="icon-btn" href="#" aria-label="Liste de souhaits">
+          <a class="icon-btn wishlist-btn" routerLink="/liste-souhaits" aria-label="Liste de souhaits">
             <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M24.125 7.65625C24.125 4.44646 21.4138 1.84375 18.0697 1.84375C15.5703 1.84375 13.4235 3.29817 12.5 5.37387C11.5765 3.29817 9.42971 1.84375 6.92904 1.84375C3.5875 1.84375 0.875 4.44646 0.875 7.65625C0.875 16.9821 12.5 23.1562 12.5 23.1562C12.5 23.1562 24.125 16.9821 24.125 7.65625Z"
                 stroke="#3A3A3A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
+            @if (wishlist.count() > 0) {
+              <span class="cart-products-count">{{ wishlist.count() }}</span>
+            }
           </a>
 
-          <a class="icon-btn cart-btn" href="#" aria-label="Panier">
+          <a class="icon-btn cart-btn" routerLink="/panier" aria-label="Panier">
             <svg width="23" height="27" viewBox="0 0 23 27" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M16.0311 11.6875V6.25C16.0311 5.04824 15.5537 3.8957 14.7039 3.04592C13.8541 2.19615 12.7016 1.71875 11.4998 1.71875C10.2981 1.71875 9.14553 2.19615 8.29575 3.04592C7.44598 3.8957 6.96858 5.04824 6.96858 6.25V11.6875M20.6904 9.27929L22.2165 23.7793C22.3011 24.5828 21.6728 25.2813 20.8644 25.2813H2.13525C1.94458 25.2815 1.756 25.2415 1.58177 25.1641C1.40753 25.0867 1.25153 24.9735 1.1239 24.8318C0.996268 24.6902 0.899863 24.5233 0.840945 24.3419C0.782027 24.1606 0.761914 23.9689 0.781913 23.7793L2.30925 9.27929C2.34448 8.94526 2.50213 8.6361 2.7518 8.41141C3.00147 8.18673 3.32549 8.06244 3.66137 8.0625H19.3383C20.0343 8.0625 20.6179 8.58813 20.6904 9.27929ZM7.4217 11.6875C7.4217 11.8077 7.37396 11.9229 7.28899 12.0079C7.20401 12.0929 7.08875 12.1406 6.96858 12.1406C6.8484 12.1406 6.73315 12.0929 6.64817 12.0079C6.56319 11.9229 6.51545 11.8077 6.51545 11.6875C6.51545 11.5673 6.56319 11.4521 6.64817 11.3671C6.73315 11.2821 6.8484 11.2344 6.96858 11.2344C7.08875 11.2344 7.20401 11.2821 7.28899 11.3671C7.37396 11.4521 7.4217 11.5673 7.4217 11.6875ZM16.4842 11.6875C16.4842 11.8077 16.4365 11.9229 16.3515 12.0079C16.2665 12.0929 16.1513 12.1406 16.0311 12.1406C15.9109 12.1406 15.7956 12.0929 15.7107 12.0079C15.6257 11.9229 15.578 11.8077 15.578 11.6875C15.578 11.5673 15.6257 11.4521 15.7107 11.3671C15.7956 11.2821 15.9109 11.2344 16.0311 11.2344C16.1513 11.2344 16.2665 11.2821 16.3515 11.3671C16.4365 11.4521 16.4842 11.5673 16.4842 11.6875Z"
                 stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
-            <span class="cart-products-count">{{ cartCount }}</span>
+            <span class="cart-products-count">{{ cart.count() }}</span>
+            <div class="cart-preview">
+              @if (cart.lines().length === 0) {
+                <p class="cart-preview-empty">Il n'y a plus d'articles dans votre panier</p>
+              } @else {
+                <ul>
+                  @for (line of cart.lines(); track line.product.id) {
+                    <li>
+                      <img [src]="line.product.image" [alt]="line.product.name" width="54" height="54" />
+                      <div class="cart-preview-info">
+                        <span class="cart-preview-name">{{ line.product.cardName }}</span>
+                        <span class="cart-preview-qty">{{ line.quantity }} × {{ line.product.price }}</span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+                <div class="cart-preview-total">
+                  <span>Total</span>
+                  <span>{{ formatPrice(cart.total()) }}</span>
+                </div>
+                <a class="btn-primary cart-preview-btn" routerLink="/panier">Voir le panier</a>
+              }
+            </div>
           </a>
         </div>
       </div>
 
       @if (searchOpen) {
         <div class="search-bar">
-          <form action="#" (submit)="$event.preventDefault()">
-            <input type="text" placeholder="Search" autocomplete="off" />
+          <form (submit)="$event.preventDefault(); submitSearch()">
+            <input type="text" name="s" placeholder="Search" autocomplete="off" [(ngModel)]="searchQuery" />
           </form>
         </div>
       }

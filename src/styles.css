@@ -34,7 +34,8 @@ a {
   color: inherit;
 }
 
-ul {
+ul,
+ol {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -126,4 +127,38 @@ p {
   .products-section-title {
     font-size: 42px;
   }
+}
+
+/* ---------- Info pages (Livraison, CGU, Contact, Plan du site) ---------- */
+.page-hero {
+  text-align: center;
+  padding: 30px 15px 10px;
+}
+
+.page-hero .hero-title {
+  font-family: Jost, sans-serif;
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: calc(32px + 30 * ((100vw - 320px) / 1560));
+  line-height: 1.1;
+  margin: 0;
+}
+
+.page-hero .hero-script {
+  font-family: Condiment, cursive;
+  color: #e3a1ac;
+  font-size: calc(20px + 14 * ((100vw - 320px) / 1560));
+  margin: 4px 0 0;
+}
+
+.page-hero .hero-intro {
+  max-width: 720px;
+  margin: 18px auto 0;
+  color: #7a7a7a;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.info-page {
+  padding-bottom: calc(40px + 60 * ((100vw - 320px) / 1560));
 }

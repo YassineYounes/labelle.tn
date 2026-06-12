@@ -1,0 +1,132 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/content/1-livraison"><span>Livraison</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Livraison</h1>
+    <p class="hero-script">Expéditions et retours</p>
+    <p class="hero-intro">
+      Labelle.tn livre partout en Tunisie jusqu'à votre porte. Nous vous garantissons une livraison sans dégâts,
+      sinon nous prenons à notre charge tout changement causé par la dégradation.
+    </p>
+  </header>
+
+  <ul class="delivery-highlights">
+    <li>
+      <span class="highlight-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 5H14V17H1V5Z" stroke="#db96a1" stroke-width="1.6" stroke-linejoin="round" />
+          <path d="M14 9H19L22 12.5V17H14V9Z" stroke="#db96a1" stroke-width="1.6" stroke-linejoin="round" />
+          <circle cx="6" cy="18.5" r="1.8" stroke="#db96a1" stroke-width="1.6" />
+          <circle cx="17.5" cy="18.5" r="1.8" stroke="#db96a1" stroke-width="1.6" />
+        </svg>
+      </span>
+      <p class="highlight-value">48h – 72h</p>
+      <p class="highlight-label">Délai de livraison ouvrable, du lundi au vendredi</p>
+    </li>
+    <li>
+      <span class="highlight-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="20" height="13" rx="2" stroke="#db96a1" stroke-width="1.6" />
+          <circle cx="12" cy="12.5" r="3" stroke="#db96a1" stroke-width="1.6" />
+          <path d="M5 9.5V9.51M19 15.5V15.51" stroke="#db96a1" stroke-width="2.2" stroke-linecap="round" />
+        </svg>
+      </span>
+      <p class="highlight-value">Gratuite dès 300 DT</p>
+      <p class="highlight-label">8 DT TTC pour toute commande inférieure à 300 DT</p>
+    </li>
+    <li>
+      <span class="highlight-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M12 21C16 17 20 13.4183 20 9.5C20 5.35786 16.4183 2 12 2C7.58172 2 4 5.35786 4 9.5C4 13.4183 8 17 12 21Z"
+            stroke="#db96a1" stroke-width="1.6" stroke-linejoin="round" />
+          <circle cx="12" cy="9.5" r="3" stroke="#db96a1" stroke-width="1.6" />
+        </svg>
+      </span>
+      <p class="highlight-value">Toute la Tunisie</p>
+      <p class="highlight-label">Les 24 gouvernorats sont desservis, jusqu'à votre porte</p>
+    </li>
+  </ul>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">a</span>Régions livrées</h2>
+    <ul class="regions-grid">
+      @for (region of regions; track region) {
+        <li>{{ region }}</li>
+      }
+    </ul>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">b</span>Lieu de livraison</h2>
+    <p>
+      Les produits sont livrés à l'adresse de livraison indiquée par l'acheteur au cours du processus de commande,
+      dans le délai indiqué sur la page de validation de la commande.
+    </p>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">c</span>Délai et modes de livraison</h2>
+    <p>
+      La livraison sera effectuée dans un délai de 48h à 72h ouvrables à compter de la date de validation de la
+      commande, et ce sur toute la Tunisie.
+    </p>
+    <p>Jours ouvrés : du lundi au vendredi, à l'exception des fêtes nationales.</p>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">d</span>Frais de livraison</h2>
+    <p>Pour toute commande d'un montant dépassant 300 DT, la livraison est gratuite.</p>
+    <p>Pour toute commande d'un montant inférieur à 300 DT, nous facturons des frais de livraison de 8 DT TTC.</p>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">e</span>Commandes non reçues</h2>
+    <p>
+      Le client peut contacter le Service Clients de labelle.tn par téléphone au
+      <a class="inline-link" href="tel:21161000">21 161 000</a> en cas de retard ou d'absence de livraison de sa
+      commande. Vous avez la possibilité d'annuler votre commande si la livraison de celle-ci n'est pas intervenue au
+      plus tard 7 jours ouvrés après la date de livraison indiquée par la Société, sauf si ce retard de livraison est
+      dû à un cas de force majeure.
+    </p>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">f</span>Modalités de retour des produits et remboursements</h2>
+    <p>
+      Dans le cas où le produit livré ne correspond pas à celui que vous avez commandé ou a été endommagé lors du
+      transport, nous prenons en charge le retour ainsi que le remplacement de votre commande.
+    </p>
+    <p>
+      Vous disposez d'un délai de 24h ouvrables à compter de la date de réception de votre commande pour faire votre
+      réclamation. Passé ce délai, aucun remboursement ne pourra être réclamé.
+    </p>
+    <p>
+      Le remboursement se fera sous forme d'un avoir correspondant au montant de votre produit sur votre compte
+      client, qui vous permettra d'effectuer un autre achat à utiliser sur le site labelle.tn.
+    </p>
+  </section>
+
+  <section class="delivery-section">
+    <h2 class="section-title"><span class="section-letter">g</span>Qualité et conformité des produits</h2>
+    <p>
+      Nous vous invitons à vérifier (ou à faire vérifier par le mandataire qui reçoit) l'état apparent des produits à
+      la livraison avec le livreur. Quel que soit le transporteur et en présence d'une anomalie apparente (avarie,
+      produit manquant par rapport au bon de livraison, colis endommagé extérieurement, bruit anormal, produits
+      cassés, etc.), vous devez refuser le colis.
+    </p>
+    <p>
+      Dans le cas d'anomalie, labelle.tn s'engage à vous rembourser ou à vous échanger les produits ne correspondant
+      pas à votre commande après que vous ayez fait part de votre réclamation en précisant vos coordonnées, votre
+      numéro de facture et les références du produit figurant sur la facture, par mail à
+      <a class="inline-link" href="mailto:contact@labelle.tn">contact&#64;labelle.tn</a> ou par courrier.
+    </p>
+  </section>
+</div>

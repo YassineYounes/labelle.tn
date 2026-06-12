@@ -1,0 +1,146 @@
+.product-miniature {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.thumbnail-images {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.product-thumbnail {
+  display: block;
+}
+
+.product-thumbnail img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* "Rupture de stock" flag */
+.product-flags {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  z-index: 2;
+  text-align: left;
+}
+
+.product-flag {
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+/* Hover action icons */
+.add-to-cart-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: absolute;
+  top: calc(5px + 25 * ((100vw - 1200px) / 680));
+  right: calc(10px + 20 * ((100vw - 1200px) / 680));
+  width: max-content;
+  z-index: 1;
+  gap: 12px;
+  opacity: 0;
+  transform: translateX(15px);
+  transition: all 0.3s linear;
+}
+
+@media (max-width: 1199px) {
+  .add-to-cart-block {
+    top: 15px;
+    right: 15px;
+  }
+}
+
+.product-miniature:hover .add-to-cart-block {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.action-icon {
+  width: 37px;
+  height: 37px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.action-icon svg path {
+  transition: all 0.3s ease;
+}
+
+.action-icon:hover svg path {
+  stroke: rgb(var(--brand-primary));
+}
+
+.action-icon:hover svg path[fill] {
+  fill: rgb(var(--brand-primary));
+}
+
+/* Title / price / reviews */
+.product-title {
+  text-align: left;
+  margin: 0 0 13px;
+  font-weight: 400;
+}
+
+.product-title a {
+  color: #3a3a3a;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.product-title a:hover {
+  color: rgb(var(--brand-primary));
+}
+
+.product-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.product-price-and-shipping {
+  color: #3a3a3a;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 130%;
+  margin-bottom: 5px;
+}
+
+.comments-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #b2b2b2;
+}
+
+.star-content {
+  display: flex;
+}
+
+.star {
+  margin: 0 1.5px;
+}
+
+.star::after {
+  content: '\2605';
+  font-size: 14px;
+  color: #dcdcdc;
+}

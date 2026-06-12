@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { PRODUCTS, Product } from '../../data/site-data';
+import { ProductCardComponent } from '../product-card/product-card.component';
 
 @Component({
   selector: 'app-featured-products',
-  imports: [RouterLink],
+  imports: [ProductCardComponent],
   templateUrl: './featured-products.component.html',
   styleUrl: './featured-products.component.css',
 })

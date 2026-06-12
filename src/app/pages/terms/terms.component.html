@@ -1,0 +1,49 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li>
+        <a routerLink="/content/3-termes-et-conditions-d-utilisation"><span>Termes et conditions d'utilisation</span></a>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Termes et conditions</h1>
+    <p class="hero-script">d'utilisation</p>
+  </header>
+
+  <div class="terms-layout">
+    <aside class="terms-summary">
+      <h2 class="summary-title">En bref</h2>
+      <ul>
+        @for (item of briefConditions; track item) {
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="11" fill="rgba(219, 150, 161, 0.15)" />
+              <path d="M7 12.5L10.5 16L17 8.5" stroke="#db96a1" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            <span>{{ item }}</span>
+          </li>
+        }
+      </ul>
+    </aside>
+
+    <div class="terms-content">
+      @for (section of sections; track section.title; let i = $index) {
+        <section class="terms-section">
+          <h2 class="terms-section-title">
+            <span class="terms-number">{{ i + 1 }}</span>
+            {{ section.title }}
+          </h2>
+          @for (paragraph of section.paragraphs; track paragraph) {
+            <p>{{ paragraph }}</p>
+          }
+        </section>
+      }
+    </div>
+  </div>
+</div>

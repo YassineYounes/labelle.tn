@@ -1,0 +1,113 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/panier"><span>Panier</span></a></li>
+      <li><a routerLink="/commande"><span>Commande</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  @if (order(); as recap) {
+    <header class="page-hero">
+      <h1 class="hero-title">Merci !</h1>
+      <p class="hero-script">Votre commande est confirmée</p>
+    </header>
+    <div class="order-success">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="11" fill="rgba(219, 150, 161, 0.15)" />
+        <path d="M7 12.5L10.5 16L17 8.5" stroke="#db96a1" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+      <p class="order-ref">Référence : <strong>{{ recap.reference }}</strong></p>
+      <p class="order-meta">{{ recap.name }} — {{ recap.address }}</p>
+      <ul class="order-lines">
+        @for (line of recap.lines; track line.product.id) {
+          <li>
+            <img [src]="line.product.image" [alt]="line.product.name" width="54" height="54" />
+            <span class="order-line-name">{{ line.product.cardName }}</span>
+            <span class="order-line-qty">× {{ line.quantity }}</span>
+          </li>
+        }
+      </ul>
+      <p class="order-total">Total payé à la livraison : <strong>{{ recap.total }}</strong></p>
+      <p class="order-note">Notre équipe vous contactera par téléphone pour confirmer la livraison sous 48h à 72h.</p>
+      <a class="btn-primary" routerLink="/">Retour à l'accueil</a>
+    </div>
+  } @else if (cart.lines().length === 0) {
+    <header class="page-hero">
+      <h1 class="hero-title">Commande</h1>
+    </header>
+    <div class="checkout-empty">
+      <p>Votre panier est vide.</p>
+      <a class="btn-primary" routerLink="/">Continuer mes achats</a>
+    </div>
+  } @else {
+    <header class="page-hero">
+      <h1 class="hero-title">Commande</h1>
+      <p class="hero-script">Paiement à la livraison</p>
+    </header>
+
+    <div class="checkout-layout">
+      <form class="checkout-form" (submit)="$event.preventDefault(); submit()">
+        <h2>Adresse de livraison</h2>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="name">Nom et prénom</label>
+            <input id="name" name="name" type="text" required [(ngModel)]="name" />
+          </div>
+          <div class="form-field">
+            <label for="phone">Téléphone</label>
+            <input id="phone" name="phone" type="tel" required [(ngModel)]="phone" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="address">Adresse</label>
+          <input id="address" name="address" type="text" required [(ngModel)]="address" />
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="governorate">Gouvernorat</label>
+            <select id="governorate" name="governorate" required [(ngModel)]="governorate">
+              <option value="" disabled selected>Choisir…</option>
+              @for (g of governorates; track g) {
+                <option [value]="g">{{ g }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="note">Note (facultatif)</label>
+            <input id="note" name="note" type="text" [(ngModel)]="note" />
+          </div>
+        </div>
+        <button class="btn-primary checkout-btn" type="submit">Confirmer la commande</button>
+      </form>
+
+      <aside class="checkout-summary">
+        <h2>Votre commande</h2>
+        <ul>
+          @for (line of cart.lines(); track line.product.id) {
+            <li>
+              <img [src]="line.product.image" [alt]="line.product.name" width="54" height="54" />
+              <span class="summary-name">{{ line.product.cardName }}</span>
+              <span class="summary-qty">× {{ line.quantity }}</span>
+            </li>
+          }
+        </ul>
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span>{{ formatPrice(cart.subtotal()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Livraison</span>
+          <span>{{ cart.deliveryFee() === 0 ? 'Gratuite' : formatPrice(cart.deliveryFee()) }}</span>
+        </div>
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>{{ formatPrice(cart.total()) }}</span>
+        </div>
+      </aside>
+    </div>
+  }
+</div>

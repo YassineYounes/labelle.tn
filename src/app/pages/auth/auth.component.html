@@ -1,0 +1,59 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/mon-compte"><span>Mon compte</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Mon compte</h1>
+    <p class="hero-script">Bienvenue chez Labelle.tn</p>
+  </header>
+
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">Connexion</button>
+      <button type="button" [class.active]="mode() === 'register'" (click)="setMode('register')">Créer un compte</button>
+    </div>
+
+    @if (submitted()) {
+      <div class="auth-notice">
+        <p>
+          La gestion des comptes sera disponible très prochainement. En attendant, vous pouvez commander directement
+          depuis votre <a routerLink="/panier">panier</a> — le paiement se fait à la livraison !
+        </p>
+      </div>
+    } @else if (mode() === 'login') {
+      <form (submit)="$event.preventDefault(); submit()">
+        <div class="form-field">
+          <label for="login-email">Adresse e-mail</label>
+          <input id="login-email" name="email" type="email" required [(ngModel)]="loginEmail" />
+        </div>
+        <div class="form-field">
+          <label for="login-password">Mot de passe</label>
+          <input id="login-password" name="password" type="password" required [(ngModel)]="loginPassword" />
+        </div>
+        <button class="btn-primary auth-btn" type="submit">Connexion</button>
+      </form>
+    } @else {
+      <form (submit)="$event.preventDefault(); submit()">
+        <div class="form-field">
+          <label for="reg-name">Nom et prénom</label>
+          <input id="reg-name" name="name" type="text" required [(ngModel)]="registerName" />
+        </div>
+        <div class="form-field">
+          <label for="reg-email">Adresse e-mail</label>
+          <input id="reg-email" name="email" type="email" required [(ngModel)]="registerEmail" />
+        </div>
+        <div class="form-field">
+          <label for="reg-password">Mot de passe</label>
+          <input id="reg-password" name="password" type="password" required [(ngModel)]="registerPassword" />
+        </div>
+        <button class="btn-primary auth-btn" type="submit">Créer un compte</button>
+      </form>
+    }
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/plan-site"><span>Plan du site</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Plan du site</h1>
+    <p class="hero-script">Tout Labelle.tn en un coup d'œil</p>
+  </header>
+
+  <div class="sitemap-grid">
+    <section class="sitemap-card sitemap-categories">
+      <h2 class="card-title">
+        <span class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="8" height="8" rx="2" stroke="#db96a1" stroke-width="1.6" />
+            <rect x="13" y="3" width="8" height="8" rx="2" stroke="#db96a1" stroke-width="1.6" />
+            <rect x="3" y="13" width="8" height="8" rx="2" stroke="#db96a1" stroke-width="1.6" />
+            <rect x="13" y="13" width="8" height="8" rx="2" stroke="#db96a1" stroke-width="1.6" />
+          </svg>
+        </span>
+        Catégories
+      </h2>
+      <div class="categories-columns">
+        @for (item of menu; track item.label) {
+          <div class="category-block">
+            <a class="category-root" [routerLink]="item.link">{{ item.label }}</a>
+            @if (item.children) {
+              <ul>
+                @for (child of item.children; track child.label) {
+                  <li>
+                    <a [routerLink]="child.link">{{ child.label }}</a>
+                    @if (child.children) {
+                      <ul class="category-sub">
+                        @for (sub of child.children; track sub.label) {
+                          <li><a [routerLink]="sub.link">{{ sub.label }}</a></li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="sitemap-side">
+      <section class="sitemap-card">
+        <h2 class="card-title">
+          <span class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 12V22H4V12M22 7H2V12H22V7ZM12 22V7M12 7C12 7 12 2 8.5 2C6 2 6 7 12 7ZM12 7C12 7 12 2 15.5 2C18 2 18 7 12 7Z"
+                stroke="#db96a1" stroke-width="1.6" stroke-linejoin="round" />
+            </svg>
+          </span>
+          Nos offres
+        </h2>
+        <ul class="link-list">
+          @for (item of offers; track item.label) {
+            <li><a [routerLink]="item.link">{{ item.label }}</a></li>
+          }
+        </ul>
+      </section>
+
+      <section class="sitemap-card">
+        <h2 class="card-title">
+          <span class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M19.031 7.25C19.031 8.45176 18.5536 9.6043 17.7038 10.4541C16.8541 11.3039 15.7015 11.7812 14.4998 11.7812C13.298 11.7812 12.1455 11.3039 11.2957 10.4541C10.4459 9.6043 9.96852 8.45176 9.96852 7.25C9.96852 6.04824 10.4459 4.8957 11.2957 4.04592C12.1455 3.19615 13.298 2.71875 14.4998 2.71875C15.7015 2.71875 16.8541 3.19615 17.7038 4.04592C18.5536 4.8957 19.031 6.04824 19.031 7.25ZM5.43848 24.3092C5.47731 21.9317 6.44905 19.6646 8.14415 17.997C9.83925 16.3293 12.1219 15.3947 14.4998 15.3947C16.8777 15.3947 19.1603 16.3293 20.8554 17.997C22.5505 19.6646 23.5222 21.9317 23.5611 24.3092C20.7183 25.6128 17.6271 26.2855 14.4998 26.2812C11.2663 26.2812 8.1971 25.5756 5.43848 24.3092Z"
+                stroke="#db96a1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          Votre compte
+        </h2>
+        <ul class="link-list">
+          @for (item of account; track item.label) {
+            <li><a [routerLink]="item.link">{{ item.label }}</a></li>
+          }
+        </ul>
+      </section>
+
+      <section class="sitemap-card">
+        <h2 class="card-title">
+          <span class="card-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z" stroke="#db96a1"
+                stroke-width="1.6" stroke-linejoin="round" />
+              <path d="M14 2V8H20M9 13H15M9 17H15" stroke="#db96a1" stroke-width="1.6" stroke-linecap="round" />
+            </svg>
+          </span>
+          Pages
+        </h2>
+        <ul class="link-list">
+          @for (item of pages; track item.label) {
+            <li><a [routerLink]="item.link">{{ item.label }}</a></li>
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+</div>

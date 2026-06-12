@@ -1,0 +1,31 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a><span>{{ config().title }}</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">{{ config().title }}</h1>
+    <p class="hero-script">{{ config().script }}</p>
+    @if (config().products.length > 0) {
+      <p class="hero-intro">Il y a {{ config().products.length }} produit{{ config().products.length > 1 ? 's' : '' }}.</p>
+    }
+  </header>
+
+  @if (config().products.length > 0) {
+    <div class="results-grid">
+      @for (product of config().products; track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  } @else {
+    <div class="listing-empty">
+      <p>{{ config().emptyMessage }}</p>
+      <a class="btn-primary" routerLink="/">Retour à l'accueil</a>
+    </div>
+  }
+</div>

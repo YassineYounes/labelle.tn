@@ -1,0 +1,81 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/panier"><span>Panier</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Panier</h1>
+    @if (cart.count() > 0) {
+      <p class="hero-script">{{ cart.count() }} article{{ cart.count() > 1 ? 's' : '' }}</p>
+    }
+  </header>
+
+  @if (cart.lines().length === 0) {
+    <div class="cart-empty">
+      <svg width="60" height="68" viewBox="0 0 23 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M16.0311 11.6875V6.25C16.0311 5.04824 15.5537 3.8957 14.7039 3.04592C13.8541 2.19615 12.7016 1.71875 11.4998 1.71875C10.2981 1.71875 9.14553 2.19615 8.29575 3.04592C7.44598 3.8957 6.96858 5.04824 6.96858 6.25V11.6875M20.6904 9.27929L22.2165 23.7793C22.3011 24.5828 21.6728 25.2813 20.8644 25.2813H2.13525C1.94458 25.2815 1.756 25.2415 1.58177 25.1641C1.40753 25.0867 1.25153 24.9735 1.1239 24.8318C0.996268 24.6902 0.899863 24.5233 0.840945 24.3419C0.782027 24.1606 0.761914 23.9689 0.781913 23.7793L2.30925 9.27929C2.34448 8.94526 2.50213 8.6361 2.7518 8.41141C3.00147 8.18673 3.32549 8.06244 3.66137 8.0625H19.3383C20.0343 8.0625 20.6179 8.58813 20.6904 9.27929Z"
+          stroke="#db96a1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p>Il n'y a plus d'articles dans votre panier</p>
+      <a class="btn-primary" routerLink="/">Continuer mes achats</a>
+    </div>
+  } @else {
+    <div class="cart-layout">
+      <div class="cart-items">
+        @for (line of cart.lines(); track line.product.id) {
+          <div class="cart-line">
+            <a [routerLink]="line.product.link" class="cart-line-image">
+              <img [src]="line.product.image" [alt]="line.product.name" width="110" height="110" />
+            </a>
+            <div class="cart-line-info">
+              <a class="cart-line-name" [routerLink]="line.product.link">{{ line.product.name }}</a>
+              <span class="cart-line-price">{{ line.product.price }}</span>
+            </div>
+            <div class="cart-line-qty">
+              <button type="button" (click)="cart.setQuantity(line.product.id, line.quantity - 1)"
+                aria-label="Diminuer">−</button>
+              <span>{{ line.quantity }}</span>
+              <button type="button" (click)="cart.setQuantity(line.product.id, line.quantity + 1)"
+                aria-label="Augmenter">+</button>
+            </div>
+            <div class="cart-line-total">{{ lineTotal(line) }}</div>
+            <button class="cart-line-remove" type="button" (click)="cart.remove(line.product.id)"
+              aria-label="Supprimer">
+              <svg width="16" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6H20M9 6V4C9 3.4 9.4 3 10 3H14C14.6 3 15 3.4 15 4V6M6 6L7 21H17L18 6M10 10V17M14 10V17"
+                  stroke="#b2b2b2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <aside class="cart-summary">
+        <h2>Récapitulatif</h2>
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span>{{ formatPrice(cart.subtotal()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Livraison</span>
+          <span>{{ cart.deliveryFee() === 0 ? 'Gratuite' : formatPrice(cart.deliveryFee()) }}</span>
+        </div>
+        @if (cart.deliveryFee() > 0) {
+          <p class="summary-note">Livraison gratuite à partir de 300 DT d'achat</p>
+        }
+        <div class="summary-row summary-total">
+          <span>Total</span>
+          <span>{{ formatPrice(cart.total()) }}</span>
+        </div>
+        <a class="btn-primary summary-btn" routerLink="/commande">Commander</a>
+        <a class="summary-continue" routerLink="/">Continuer mes achats</a>
+      </aside>
+    </div>
+  }
+</div>

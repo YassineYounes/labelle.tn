@@ -1,0 +1,126 @@
+.breadcrumb-bar {
+  border-top: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.breadcrumbs li {
+  padding: 14px 0;
+}
+
+.breadcrumbs li a {
+  color: #b2b2b2;
+  font-size: 12px;
+  padding-right: 5px;
+  transition: color 0.2s linear;
+}
+
+.breadcrumbs li:not(:last-child) a::after {
+  content: '›';
+  color: #dedede;
+  margin-left: 8px;
+  margin-right: 3px;
+}
+
+.breadcrumbs li a:hover {
+  color: rgb(var(--brand-primary));
+}
+
+.auth-card {
+  max-width: 460px;
+  margin: 30px auto 0;
+  border: 1px solid rgba(219, 150, 161, 0.45);
+  border-radius: 18px;
+  padding: 36px;
+  background: #fff;
+}
+
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  border-bottom: 1px solid #dedede;
+  margin-bottom: 28px;
+}
+
+.auth-tabs button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  text-transform: uppercase;
+  color: #3a3a3a;
+  padding: 0 0 12px;
+  cursor: pointer;
+  position: relative;
+}
+
+.auth-tabs button::after {
+  background: rgb(var(--brand-primary));
+  content: '';
+  left: 0;
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  transform: scaleX(0);
+  transition: all 0.3s linear;
+}
+
+.auth-tabs button.active::after,
+.auth-tabs button:hover::after {
+  transform: scaleX(1);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  font-size: 13px;
+  color: #3a3a3a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.form-field input {
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #3a3a3a;
+  outline: none;
+  transition: border-color 0.2s linear;
+}
+
+.form-field input:focus {
+  border-color: rgb(var(--brand-primary));
+}
+
+.auth-btn {
+  width: 100%;
+  font-size: 15px;
+  padding: 14px 22px;
+  font-family: inherit;
+  margin-top: 6px;
+}
+
+.auth-notice p {
+  color: #7a7a7a;
+  font-size: 14.5px;
+  line-height: 1.8;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.auth-notice a {
+  color: rgb(var(--brand-primary));
+}

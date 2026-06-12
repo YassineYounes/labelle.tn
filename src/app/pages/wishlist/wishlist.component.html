@@ -1,0 +1,33 @@
+<nav class="breadcrumb-bar">
+  <div class="container">
+    <ol class="breadcrumbs">
+      <li><a routerLink="/"><span>Accueil</span></a></li>
+      <li><a routerLink="/liste-souhaits"><span>Liste de souhaits</span></a></li>
+    </ol>
+  </div>
+</nav>
+
+<div class="container info-page">
+  <header class="page-hero">
+    <h1 class="hero-title">Liste de souhaits</h1>
+    <p class="hero-script">Vos coups de cœur</p>
+  </header>
+
+  @if (wishlist.products().length > 0) {
+    <div class="results-grid">
+      @for (product of wishlist.products(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+    </div>
+  } @else {
+    <div class="wishlist-empty">
+      <svg width="56" height="56" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M24.125 7.65625C24.125 4.44646 21.4138 1.84375 18.0697 1.84375C15.5703 1.84375 13.4235 3.29817 12.5 5.37387C11.5765 3.29817 9.42971 1.84375 6.92904 1.84375C3.5875 1.84375 0.875 4.44646 0.875 7.65625C0.875 16.9821 12.5 23.1562 12.5 23.1562C12.5 23.1562 24.125 16.9821 24.125 7.65625Z"
+          stroke="#db96a1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p>Votre liste de souhaits est vide. Cliquez sur le cœur d'un produit pour l'ajouter !</p>
+      <a class="btn-primary" routerLink="/">Découvrir nos produits</a>
+    </div>
+  }
+</div>
