@@ -67,8 +67,13 @@
               </svg>
             </a>
             <div class="login-popup">
-              <a class="btn-primary login-btn" routerLink="/mon-compte">Connexion</a>
-              <a class="btn-primary login-btn" routerLink="/mon-compte">Créer un compte</a>
+              @if (account.isLoggedIn()) {
+                <a class="btn-primary login-btn" routerLink="/mon-compte">Mon compte</a>
+                <button type="button" class="btn-primary login-btn" (click)="account.logout()">Déconnexion</button>
+              } @else {
+                <a class="btn-primary login-btn" routerLink="/mon-compte">Connexion</a>
+                <a class="btn-primary login-btn" routerLink="/mon-compte">Créer un compte</a>
+              }
             </div>
           </div>
 

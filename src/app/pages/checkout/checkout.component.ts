@@ -1,10 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { CartLine, CartService, formatPrice } from '../../services/cart.service';
 import { CheckoutService, DeliveryZone, OrderConfirmation } from '../../services/checkout.service';
+import { AccountService } from '../../services/account.service';
 
 interface OrderRecap {
   reference: string;
@@ -23,6 +24,7 @@ interface OrderRecap {
 export class CheckoutComponent {
   cart = inject(CartService);
   private checkout = inject(CheckoutService);
+  private account = inject(AccountService);
   formatPrice = formatPrice;
 
   zones = toSignal(this.checkout.deliveryZones().pipe(catchError(() => of([] as DeliveryZone[]))), {
@@ -41,6 +43,22 @@ export class CheckoutComponent {
   submitting = signal(false);
   error = signal<string | null>(null);
   order = signal<OrderRecap | null>(null);
+
+  constructor() {
+    // Prefill the form from the logged-in customer's profile (only fills
+    // fields the visitor hasn't already typed into).
+    effect(() => {
+      const profile = this.account.user();
+      if (!profile) {
+        return;
+      }
+      if (!this.firstName) this.firstName = profile.firstName;
+      if (!this.lastName) this.lastName = profile.lastName;
+      if (!this.phone) this.phone = profile.phone;
+      if (!this.email && profile.email) this.email = profile.email;
+      if (!this.address && profile.address) this.address = profile.address;
+    });
+  }
 
   /** Fee for the selected zone, waived over the free-delivery threshold (matches the cart). */
   deliveryFee = computed<number | null>(() => {

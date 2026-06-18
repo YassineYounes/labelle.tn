@@ -8,6 +8,6 @@
  */
 export const environment = {
   production: false,
-  apiBase: 'http://127.0.0.1:8765/index.php',
-  assetBase: 'http://127.0.0.1:8765',
+  apiBase: 'http://127.0.0.1:3000',
+  assetBase: 'http://127.0.0.1:3000',
 };

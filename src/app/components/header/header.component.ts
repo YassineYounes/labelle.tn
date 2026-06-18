@@ -5,6 +5,7 @@ import { MenuItem } from '../../data/site-data';
 import { CartService, formatPrice, parsePrice } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
 import { CatalogService } from '../../services/catalog.service';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-header',
@@ -21,6 +22,7 @@ export class HeaderComponent {
 
   cart = inject(CartService);
   wishlist = inject(WishlistService);
+  account = inject(AccountService);
   private router = inject(Router);
 
   constructor(catalog: CatalogService) {

@@ -8,52 +8,158 @@
 </nav>
 
 <div class="container info-page">
-  <header class="page-hero">
-    <h1 class="hero-title">Mon compte</h1>
-    <p class="hero-script">Bienvenue chez Labelle.tn</p>
-  </header>
+  @if (isLoggedIn()) {
+    <header class="page-hero">
+      <h1 class="hero-title">Mon compte</h1>
+      <p class="hero-script">Bonjour {{ greeting() }}</p>
+    </header>
 
-  <div class="auth-card">
-    <div class="auth-tabs">
-      <button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">Connexion</button>
-      <button type="button" [class.active]="mode() === 'register'" (click)="setMode('register')">Créer un compte</button>
+    <div class="account-layout">
+      <aside class="account-nav">
+        <button type="button" [class.active]="accountTab() === 'orders'" (click)="setTab('orders')">
+          Mes commandes
+        </button>
+        <button type="button" [class.active]="accountTab() === 'profile'" (click)="setTab('profile')">
+          Mon profil
+        </button>
+        <button type="button" class="account-logout" (click)="logout()">Déconnexion</button>
+      </aside>
+
+      <section class="account-content">
+        @if (accountTab() === 'orders') {
+          @if (!ordersLoaded()) {
+            <p class="account-muted">Chargement…</p>
+          } @else if (orders().length === 0) {
+            <div class="account-empty">
+              <p>Vous n'avez pas encore de commande.</p>
+              <a class="btn-primary" routerLink="/">Découvrir nos produits</a>
+            </div>
+          } @else {
+            <table class="account-orders">
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>Date</th>
+                  <th>Articles</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (order of orders(); track order.orderId) {
+                  <tr>
+                    <td><strong>{{ order.reference }}</strong></td>
+                    <td>{{ order.createdAt | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ order.itemCount }}</td>
+                    <td>{{ formatPrice(order.total) }}</td>
+                    <td>
+                      <span class="order-status" [style.background]="order.status.color">
+                        {{ order.status.name }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        } @else {
+          <form class="account-profile" (submit)="$event.preventDefault(); saveProfile()">
+            <div class="form-row">
+              <div class="form-field">
+                <label for="p-first">Prénom</label>
+                <input id="p-first" name="pfirst" type="text" required [(ngModel)]="editFirstName" />
+              </div>
+              <div class="form-field">
+                <label for="p-last">Nom</label>
+                <input id="p-last" name="plast" type="text" required [(ngModel)]="editLastName" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label>E-mail</label>
+                <input type="email" [value]="user()?.email" disabled />
+              </div>
+              <div class="form-field">
+                <label>Téléphone</label>
+                <input type="tel" [value]="user()?.phone" disabled />
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="p-address">Adresse</label>
+              <input id="p-address" name="paddress" type="text" [(ngModel)]="editAddress" />
+            </div>
+            @if (error()) { <p class="auth-error">{{ error() }}</p> }
+            @if (savedNotice()) { <p class="auth-success">Profil mis à jour.</p> }
+            <button class="btn-primary auth-btn" type="submit" [disabled]="busy()">
+              {{ busy() ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+          </form>
+        }
+      </section>
     </div>
+  } @else {
+    <header class="page-hero">
+      <h1 class="hero-title">Mon compte</h1>
+      <p class="hero-script">Bienvenue chez Labelle.tn</p>
+    </header>
 
-    @if (submitted()) {
-      <div class="auth-notice">
-        <p>
-          La gestion des comptes sera disponible très prochainement. En attendant, vous pouvez commander directement
-          depuis votre <a routerLink="/panier">panier</a> — le paiement se fait à la livraison !
-        </p>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">Connexion</button>
+        <button type="button" [class.active]="mode() === 'register'" (click)="setMode('register')">
+          Créer un compte
+        </button>
       </div>
-    } @else if (mode() === 'login') {
-      <form (submit)="$event.preventDefault(); submit()">
-        <div class="form-field">
-          <label for="login-email">Adresse e-mail</label>
-          <input id="login-email" name="email" type="email" required [(ngModel)]="loginEmail" />
-        </div>
-        <div class="form-field">
-          <label for="login-password">Mot de passe</label>
-          <input id="login-password" name="password" type="password" required [(ngModel)]="loginPassword" />
-        </div>
-        <button class="btn-primary auth-btn" type="submit">Connexion</button>
-      </form>
-    } @else {
-      <form (submit)="$event.preventDefault(); submit()">
-        <div class="form-field">
-          <label for="reg-name">Nom et prénom</label>
-          <input id="reg-name" name="name" type="text" required [(ngModel)]="registerName" />
-        </div>
-        <div class="form-field">
-          <label for="reg-email">Adresse e-mail</label>
-          <input id="reg-email" name="email" type="email" required [(ngModel)]="registerEmail" />
-        </div>
-        <div class="form-field">
-          <label for="reg-password">Mot de passe</label>
-          <input id="reg-password" name="password" type="password" required [(ngModel)]="registerPassword" />
-        </div>
-        <button class="btn-primary auth-btn" type="submit">Créer un compte</button>
-      </form>
-    }
-  </div>
+
+      @if (error()) { <p class="auth-error">{{ error() }}</p> }
+
+      @if (mode() === 'login') {
+        <form (submit)="$event.preventDefault(); login()">
+          <div class="form-field">
+            <label for="login-email">Adresse e-mail</label>
+            <input id="login-email" name="email" type="email" required [(ngModel)]="loginEmail" />
+          </div>
+          <div class="form-field">
+            <label for="login-password">Mot de passe</label>
+            <input id="login-password" name="password" type="password" required [(ngModel)]="loginPassword" />
+          </div>
+          <button class="btn-primary auth-btn" type="submit" [disabled]="busy()">
+            {{ busy() ? 'Connexion…' : 'Connexion' }}
+          </button>
+        </form>
+      } @else {
+        <form (submit)="$event.preventDefault(); register()">
+          <div class="form-row">
+            <div class="form-field">
+              <label for="reg-first">Prénom</label>
+              <input id="reg-first" name="rfirst" type="text" required [(ngModel)]="regFirstName" />
+            </div>
+            <div class="form-field">
+              <label for="reg-last">Nom</label>
+              <input id="reg-last" name="rlast" type="text" required [(ngModel)]="regLastName" />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="reg-phone">Téléphone</label>
+            <input id="reg-phone" name="rphone" type="tel" required [(ngModel)]="regPhone" />
+          </div>
+          <div class="form-field">
+            <label for="reg-email">Adresse e-mail</label>
+            <input id="reg-email" name="remail" type="email" required [(ngModel)]="regEmail" />
+          </div>
+          <div class="form-field">
+            <label for="reg-password">Mot de passe</label>
+            <input id="reg-password" name="rpassword" type="password" required [(ngModel)]="regPassword" />
+          </div>
+          <div class="form-field">
+            <label for="reg-address">Adresse (facultatif)</label>
+            <input id="reg-address" name="raddress" type="text" [(ngModel)]="regAddress" />
+          </div>
+          <button class="btn-primary auth-btn" type="submit" [disabled]="busy()">
+            {{ busy() ? 'Création…' : 'Créer un compte' }}
+          </button>
+        </form>
+      }
+    </div>
+  }
 </div>
