@@ -34,6 +34,8 @@ export interface OrderDetail extends OrderSummary {
   shipping: { zone: string | null; city: string | null; address: string | null };
   lines: { name: string; unitPrice: number; quantity: number; lineTotal: number }[];
   subtotal: number;
+  discount: number;
+  couponCode: string | null;
   deliveryFee: number;
   paymentMethod: string;
   history: { status: string; color: string; at: string }[];

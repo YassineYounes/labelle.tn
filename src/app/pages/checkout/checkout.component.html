@@ -31,6 +31,11 @@
           </li>
         }
       </ul>
+      @if (recap.discount > 0) {
+        <p class="order-discount">
+          Remise{{ recap.couponCode ? ' (' + recap.couponCode + ')' : '' }} : −{{ formatPrice(recap.discount) }}
+        </p>
+      }
       <p class="order-total">Total payé à la livraison : <strong>{{ recap.total }}</strong></p>
       <p class="order-note">Notre équipe vous contactera par téléphone pour confirmer la livraison sous 48h à 72h.</p>
       <a class="btn-primary" routerLink="/">Retour à l'accueil</a>
@@ -120,10 +125,43 @@
             </li>
           }
         </ul>
+        <div class="coupon-box">
+          <label for="coupon">Code promo</label>
+          <div class="coupon-row">
+            <input
+              id="coupon"
+              name="coupon"
+              type="text"
+              autocomplete="off"
+              placeholder="Ex : BIENVENUE10"
+              [(ngModel)]="couponCode"
+              (input)="couponError.set(null)"
+            />
+            <button type="button" class="coupon-apply" [disabled]="applyingCoupon()" (click)="applyCoupon()">
+              {{ applyingCoupon() ? '…' : 'Appliquer' }}
+            </button>
+          </div>
+          @if (couponError()) {
+            <p class="coupon-error">{{ couponError() }}</p>
+          }
+          @if (appliedCode()) {
+            <p class="coupon-applied">
+              Code <strong>{{ appliedCode() }}</strong> appliqué.
+              <button type="button" class="coupon-remove" (click)="removeCoupon()">Retirer</button>
+            </p>
+          }
+        </div>
+
         <div class="summary-row">
           <span>Sous-total</span>
           <span>{{ formatPrice(cart.subtotal()) }}</span>
         </div>
+        @if (discount() > 0) {
+          <div class="summary-row summary-discount">
+            <span>Remise{{ appliedCode() ? ' (' + appliedCode() + ')' : '' }}</span>
+            <span>−{{ formatPrice(discount()) }}</span>
+          </div>
+        }
         <div class="summary-row">
           <span>Livraison</span>
           @if (deliveryFee() === null) {

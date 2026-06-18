@@ -19,12 +19,31 @@ export interface CheckoutPayload {
   shipping: { zoneId: number; city?: string; postalCode?: string; address: string };
   items: CheckoutItem[];
   comment?: string;
+  couponCode?: string;
+}
+
+export interface QuoteRequest {
+  items: CheckoutItem[];
+  zoneId?: number | null;
+  couponCode?: string;
+}
+
+export interface QuoteResult {
+  subtotal: number;
+  discount: number;
+  couponCode: string | null;
+  couponError: string | null;
+  deliveryFee: number;
+  total: number;
+  zone: string | null;
 }
 
 export interface OrderConfirmation {
   reference: string;
   orderId: number;
   subtotal: number;
+  discount: number;
+  couponCode: string | null;
   deliveryFee: number;
   total: number;
   status: string;
@@ -38,6 +57,11 @@ export class CheckoutService {
 
   deliveryZones(): Observable<DeliveryZone[]> {
     return this.http.get<DeliveryZone[]>(`${this.base}/api/shop/delivery-zones`);
+  }
+
+  /** Server-side repricing — used to validate a promo code before checkout. */
+  quote(payload: QuoteRequest): Observable<QuoteResult> {
+    return this.http.post<QuoteResult>(`${this.base}/api/shop/checkout/quote`, payload);
   }
 
   placeOrder(payload: CheckoutPayload): Observable<OrderConfirmation> {

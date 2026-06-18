@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { CartLine, CartService, formatPrice } from '../../services/cart.service';
-import { CheckoutService, DeliveryZone, OrderConfirmation } from '../../services/checkout.service';
+import { CheckoutService, DeliveryZone, OrderConfirmation, QuoteResult } from '../../services/checkout.service';
 import { AccountService } from '../../services/account.service';
 
 interface OrderRecap {
   reference: string;
   lines: CartLine[];
   total: string;
+  discount: number;
+  couponCode: string | null;
   name: string;
   address: string;
 }
@@ -39,6 +41,12 @@ export class CheckoutComponent {
   city = '';
   zoneId = signal<number | null>(null);
   note = '';
+
+  couponCode = '';
+  applyingCoupon = signal(false);
+  couponError = signal<string | null>(null);
+  appliedCode = signal<string | null>(null);
+  discount = signal(0);
 
   submitting = signal(false);
   error = signal<string | null>(null);
@@ -69,9 +77,59 @@ export class CheckoutComponent {
     return this.cart.subtotal() >= 300 ? 0 : zone.fee;
   });
 
-  total = computed(() => this.cart.subtotal() + (this.deliveryFee() ?? 0));
+  total = computed(() =>
+    Math.max(0, this.cart.subtotal() - this.discount()) + (this.deliveryFee() ?? 0),
+  );
 
   selectedZoneName = computed(() => this.zones().find((z) => z.id === this.zoneId())?.name ?? '');
+
+  /** Validate the typed promo code server-side and apply (or report) it. */
+  applyCoupon(): void {
+    const code = this.couponCode.trim();
+    this.couponError.set(null);
+    if (!code) {
+      this.clearCoupon();
+      return;
+    }
+
+    this.applyingCoupon.set(true);
+    this.checkout
+      .quote({
+        items: this.cart.lines().map((line) => ({ id: line.product.id, quantity: line.quantity })),
+        zoneId: this.zoneId(),
+        couponCode: code,
+      })
+      .pipe(
+        catchError(() => {
+          this.couponError.set('Impossible de vérifier le code. Réessayez.');
+          return of(null as QuoteResult | null);
+        }),
+      )
+      .subscribe((result) => {
+        this.applyingCoupon.set(false);
+        if (!result) {
+          return;
+        }
+        if (result.couponError) {
+          this.couponError.set(result.couponError);
+          this.clearCoupon();
+          return;
+        }
+        this.discount.set(result.discount);
+        this.appliedCode.set(result.couponCode);
+      });
+  }
+
+  clearCoupon(): void {
+    this.discount.set(0);
+    this.appliedCode.set(null);
+  }
+
+  removeCoupon(): void {
+    this.couponCode = '';
+    this.couponError.set(null);
+    this.clearCoupon();
+  }
 
   submit(): void {
     this.error.set(null);
@@ -104,6 +162,7 @@ export class CheckoutComponent {
         },
         items: lines.map((line) => ({ id: line.product.id, quantity: line.quantity })),
         comment: this.note.trim() || undefined,
+        couponCode: this.appliedCode() ?? undefined,
       })
       .pipe(
         catchError((err) => {
@@ -120,6 +179,8 @@ export class CheckoutComponent {
           reference: confirmation.reference,
           lines,
           total: formatPrice(confirmation.total),
+          discount: confirmation.discount,
+          couponCode: confirmation.couponCode,
           name: `${this.firstName} ${this.lastName}`.trim(),
           address: `${this.address}, ${this.selectedZoneName()}`,
         });
