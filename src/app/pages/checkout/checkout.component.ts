@@ -1,13 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of } from 'rxjs';
 import { CartLine, CartService, formatPrice } from '../../services/cart.service';
-
-const GOVERNORATES = [
-  'Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
-  'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine', 'Monastir', 'Nabeul',
-  'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
-];
+import { CheckoutService, DeliveryZone, OrderConfirmation } from '../../services/checkout.service';
 
 interface OrderRecap {
   reference: string;
@@ -25,28 +22,91 @@ interface OrderRecap {
 })
 export class CheckoutComponent {
   cart = inject(CartService);
+  private checkout = inject(CheckoutService);
   formatPrice = formatPrice;
-  governorates = GOVERNORATES;
 
-  name = '';
+  zones = toSignal(this.checkout.deliveryZones().pipe(catchError(() => of([] as DeliveryZone[]))), {
+    initialValue: [] as DeliveryZone[],
+  });
+
+  firstName = '';
+  lastName = '';
   phone = '';
+  email = '';
   address = '';
-  governorate = '';
+  city = '';
+  zoneId = signal<number | null>(null);
   note = '';
 
+  submitting = signal(false);
+  error = signal<string | null>(null);
   order = signal<OrderRecap | null>(null);
 
+  /** Fee for the selected zone, waived over the free-delivery threshold (matches the cart). */
+  deliveryFee = computed<number | null>(() => {
+    const zone = this.zones().find((z) => z.id === this.zoneId());
+    if (!zone) {
+      return null;
+    }
+    return this.cart.subtotal() >= 300 ? 0 : zone.fee;
+  });
+
+  total = computed(() => this.cart.subtotal() + (this.deliveryFee() ?? 0));
+
+  selectedZoneName = computed(() => this.zones().find((z) => z.id === this.zoneId())?.name ?? '');
+
   submit(): void {
-    if (!this.name.trim() || !this.phone.trim() || !this.address.trim() || !this.governorate) {
+    this.error.set(null);
+    const zoneId = this.zoneId();
+    if (
+      !this.firstName.trim() ||
+      !this.lastName.trim() ||
+      !this.phone.trim() ||
+      !this.address.trim() ||
+      !zoneId
+    ) {
+      this.error.set('Veuillez remplir tous les champs obligatoires.');
       return;
     }
-    this.order.set({
-      reference: 'LB' + Date.now().toString().slice(-8),
-      lines: this.cart.lines(),
-      total: formatPrice(this.cart.total()),
-      name: this.name,
-      address: `${this.address}, ${this.governorate}`,
-    });
-    this.cart.clear();
+
+    this.submitting.set(true);
+    const lines = this.cart.lines();
+    this.checkout
+      .placeOrder({
+        customer: {
+          firstName: this.firstName.trim(),
+          lastName: this.lastName.trim(),
+          phone: this.phone.trim(),
+          email: this.email.trim() || undefined,
+        },
+        shipping: {
+          zoneId,
+          city: this.city.trim() || undefined,
+          address: this.address.trim(),
+        },
+        items: lines.map((line) => ({ id: line.product.id, quantity: line.quantity })),
+        comment: this.note.trim() || undefined,
+      })
+      .pipe(
+        catchError((err) => {
+          this.error.set(err?.error?.error ?? 'Une erreur est survenue. Veuillez réessayer.');
+          this.submitting.set(false);
+          return of(null as OrderConfirmation | null);
+        }),
+      )
+      .subscribe((confirmation) => {
+        if (!confirmation) {
+          return;
+        }
+        this.order.set({
+          reference: confirmation.reference,
+          lines,
+          total: formatPrice(confirmation.total),
+          name: `${this.firstName} ${this.lastName}`.trim(),
+          address: `${this.address}, ${this.selectedZoneName()}`,
+        });
+        this.cart.clear();
+        this.submitting.set(false);
+      });
   }
 }

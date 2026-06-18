@@ -54,12 +54,22 @@
         <h2>Adresse de livraison</h2>
         <div class="form-row">
           <div class="form-field">
-            <label for="name">Nom et prénom</label>
-            <input id="name" name="name" type="text" required [(ngModel)]="name" />
+            <label for="firstName">Prénom</label>
+            <input id="firstName" name="firstName" type="text" required [(ngModel)]="firstName" />
           </div>
+          <div class="form-field">
+            <label for="lastName">Nom</label>
+            <input id="lastName" name="lastName" type="text" required [(ngModel)]="lastName" />
+          </div>
+        </div>
+        <div class="form-row">
           <div class="form-field">
             <label for="phone">Téléphone</label>
             <input id="phone" name="phone" type="tel" required [(ngModel)]="phone" />
+          </div>
+          <div class="form-field">
+            <label for="email">E-mail (facultatif)</label>
+            <input id="email" name="email" type="email" [(ngModel)]="email" />
           </div>
         </div>
         <div class="form-field">
@@ -69,19 +79,34 @@
         <div class="form-row">
           <div class="form-field">
             <label for="governorate">Gouvernorat</label>
-            <select id="governorate" name="governorate" required [(ngModel)]="governorate">
-              <option value="" disabled selected>Choisir…</option>
-              @for (g of governorates; track g) {
-                <option [value]="g">{{ g }}</option>
+            <select
+              id="governorate"
+              name="governorate"
+              required
+              [ngModel]="zoneId()"
+              (ngModelChange)="zoneId.set($event)"
+            >
+              <option [ngValue]="null" disabled>Choisir…</option>
+              @for (zone of zones(); track zone.id) {
+                <option [ngValue]="zone.id">{{ zone.name }}</option>
               }
             </select>
           </div>
           <div class="form-field">
-            <label for="note">Note (facultatif)</label>
-            <input id="note" name="note" type="text" [(ngModel)]="note" />
+            <label for="city">Ville (facultatif)</label>
+            <input id="city" name="city" type="text" [(ngModel)]="city" />
           </div>
         </div>
-        <button class="btn-primary checkout-btn" type="submit">Confirmer la commande</button>
+        <div class="form-field">
+          <label for="note">Note (facultatif)</label>
+          <input id="note" name="note" type="text" [(ngModel)]="note" />
+        </div>
+        @if (error()) {
+          <p class="checkout-error">{{ error() }}</p>
+        }
+        <button class="btn-primary checkout-btn" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Traitement…' : 'Confirmer la commande' }}
+        </button>
       </form>
 
       <aside class="checkout-summary">
@@ -101,11 +126,15 @@
         </div>
         <div class="summary-row">
           <span>Livraison</span>
-          <span>{{ cart.deliveryFee() === 0 ? 'Gratuite' : formatPrice(cart.deliveryFee()) }}</span>
+          @if (deliveryFee() === null) {
+            <span>Choisir un gouvernorat</span>
+          } @else {
+            <span>{{ deliveryFee() === 0 ? 'Gratuite' : formatPrice(deliveryFee()!) }}</span>
+          }
         </div>
         <div class="summary-row summary-total">
           <span>Total</span>
-          <span>{{ formatPrice(cart.total()) }}</span>
+          <span>{{ formatPrice(total()) }}</span>
         </div>
       </aside>
     </div>
