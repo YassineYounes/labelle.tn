@@ -1,9 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 import { Product } from '../../data/site-data';
-import { CategoryNode, getCategoryChain, getCategoryNode, getCategoryProducts } from '../../data/catalog';
+import { CategoryPage, CatalogService } from '../../services/catalog.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
 const PAGE_SIZE = 12;
@@ -11,22 +11,34 @@ const PAGE_SIZE = 12;
 interface SortOption {
   key: string;
   label: string;
-  compare: ((a: Product, b: Product) => number) | null;
 }
 
+/** Storefront sort keys mapped to the API's supported sort params. */
 const SORT_OPTIONS: SortOption[] = [
-  { key: 'product.sales.desc', label: 'Ventes, ordre décroissant', compare: null },
-  { key: 'product.position.asc', label: 'Pertinence', compare: null },
-  { key: 'product.name.asc', label: 'Nom, A à Z', compare: (a, b) => a.name.localeCompare(b.name) },
-  { key: 'product.name.desc', label: 'Nom, Z à A', compare: (a, b) => b.name.localeCompare(a.name) },
-  { key: 'product.price.asc', label: 'Prix, croissant', compare: (a, b) => parsePrice(a) - parsePrice(b) },
-  { key: 'product.price.desc', label: 'Prix, décroissant', compare: (a, b) => parsePrice(b) - parsePrice(a) },
-  { key: 'product.reference.asc', label: 'Reference, A to Z', compare: (a, b) => a.reference.localeCompare(b.reference) },
-  { key: 'product.reference.desc', label: 'Reference, Z to A', compare: (a, b) => b.reference.localeCompare(a.reference) },
+  { key: 'product.sales.desc', label: 'Ventes, ordre décroissant' },
+  { key: 'product.position.asc', label: 'Pertinence' },
+  { key: 'product.name.asc', label: 'Nom, A à Z' },
+  { key: 'product.price.asc', label: 'Prix, croissant' },
+  { key: 'product.price.desc', label: 'Prix, décroissant' },
 ];
 
-function parsePrice(p: Product): number {
-  return parseFloat(p.price.replace(',', '.'));
+const API_SORT: Record<string, string> = {
+  'product.name.asc': 'name',
+  'product.price.asc': 'price_asc',
+  'product.price.desc': 'price_desc',
+  'product.sales.desc': 'newest',
+  'product.position.asc': 'newest',
+};
+
+interface BreadcrumbItem {
+  id: string;
+  name: string;
+  link: string;
+}
+
+interface CategoryView {
+  name: string;
+  children: { name: string; link: string }[];
 }
 
 @Component({
@@ -38,6 +50,7 @@ function parsePrice(p: Product): number {
 export class CategoryComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private catalog = inject(CatalogService);
 
   sortOptions = SORT_OPTIONS;
   sortOpen = signal(false);
@@ -48,19 +61,6 @@ export class CategoryComponent {
   });
 
   private queryParams = toSignal(this.route.queryParamMap, { initialValue: null });
-
-  categoryId = computed(() => parseInt(this.catSlug(), 10));
-
-  category = computed<CategoryNode>(() => {
-    const node = getCategoryNode(this.categoryId());
-    if (!node) {
-      this.router.navigate(['/']);
-      return { id: 0, name: '', link: '/', parentId: null, children: [] };
-    }
-    return node;
-  });
-
-  breadcrumb = computed(() => getCategoryChain(this.categoryId()));
 
   page = computed(() => {
     const raw = this.queryParams()?.get('page');
@@ -74,24 +74,47 @@ export class CategoryComponent {
     () => SORT_OPTIONS.find((o) => o.key === this.sortKey())?.label ?? 'Pertinence',
   );
 
-  private allProducts = computed(() => {
-    const products = [...getCategoryProducts(this.categoryId())];
-    const compare = SORT_OPTIONS.find((o) => o.key === this.sortKey())?.compare;
-    if (compare) {
-      products.sort(compare);
-    }
-    return products;
+  private data = toSignal(
+    combineLatest([
+      toObservable(this.catSlug),
+      toObservable(this.page),
+      toObservable(this.sortKey),
+    ]).pipe(
+      switchMap(([slug, page, key]) =>
+        slug
+          ? this.catalog.category(slug, page, API_SORT[key] ?? 'newest').pipe(
+              catchError(() => {
+                this.router.navigate(['/']);
+                return of(null);
+              }),
+            )
+          : of(null),
+      ),
+    ),
+    { initialValue: null as CategoryPage | null },
+  );
+
+  category = computed<CategoryView>(() => {
+    const c = this.data()?.category;
+    return {
+      name: c?.name ?? '',
+      children: (c?.children ?? []).map((child) => ({ name: child.name, link: `/${child.slug}` })),
+    };
   });
 
-  totalProducts = computed(() => this.allProducts().length);
-  totalPages = computed(() => Math.max(1, Math.ceil(this.totalProducts() / PAGE_SIZE)));
+  breadcrumb = computed<BreadcrumbItem[]>(() =>
+    (this.data()?.category.breadcrumb ?? []).map((b) => ({
+      id: b.slug,
+      name: b.name,
+      link: `/${b.slug}`,
+    })),
+  );
 
-  pageProducts = computed(() => {
-    const start = (this.page() - 1) * PAGE_SIZE;
-    return this.allProducts().slice(start, start + PAGE_SIZE);
-  });
+  pageProducts = computed<Product[]>(() => this.data()?.products ?? []);
+  totalProducts = computed(() => this.data()?.total ?? 0);
+  totalPages = computed(() => Math.max(1, this.data()?.pages ?? 1));
 
-  showingFrom = computed(() => (this.page() - 1) * PAGE_SIZE + 1);
+  showingFrom = computed(() => (this.totalProducts() === 0 ? 0 : (this.page() - 1) * PAGE_SIZE + 1));
   showingTo = computed(() => Math.min(this.page() * PAGE_SIZE, this.totalProducts()));
 
   /** Page numbers with '…' gaps, like the original (1 2 3 … 6) */

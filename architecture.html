@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Labelle.tn — E-commerce Data Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Sans", "Segoe UI", Arial, sans-serif; color: #1a1a2e; font-size: 10.5px; line-height: 1.55; margin: 0; }
+  h1 { font-size: 26px; margin: 0 0 4px; color: #0f3460; }
+  h2 { font-size: 17px; color: #0f3460; border-bottom: 2px solid #e94560; padding-bottom: 4px; margin-top: 28px; }
+  h3 { font-size: 13px; color: #16213e; margin: 18px 0 6px; }
+  h4 { font-size: 11px; color: #16213e; margin: 12px 0 4px; }
+  .subtitle { color: #555; font-size: 12px; margin-bottom: 2px; }
+  .meta { color: #888; font-size: 10px; margin-bottom: 18px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 14px; }
+  tr { page-break-inside: avoid; }
+  th { background: #0f3460; color: #fff; text-align: left; padding: 5px 7px; font-size: 9.5px; }
+  td { border: 1px solid #ccd; padding: 4px 7px; vertical-align: top; font-size: 9.5px; }
+  tr:nth-child(even) td { background: #f4f6fb; }
+  code { background: #eef1f8; border-radius: 3px; padding: 1px 4px; font-family: "DejaVu Sans Mono", Consolas, monospace; font-size: 9px; color: #c0392b; }
+  th code { color: #ffd9d9; background: transparent; }
+  .answer { background: #f0f6ff; border-left: 4px solid #0f3460; padding: 10px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .answer .q { font-weight: bold; color: #0f3460; }
+  .verdict { display:inline-block; background:#e94560; color:#fff; border-radius: 3px; padding: 1px 8px; font-size: 9px; font-weight: bold; letter-spacing: .5px; }
+  .note { background: #fff8e6; border-left: 4px solid #f0a500; padding: 8px 12px; margin: 10px 0; font-size: 9.5px; page-break-inside: avoid; }
+  .precedent { background: #f0fbf4; border-left: 4px solid #2eb872; padding: 8px 12px; margin: 8px 0; font-size: 9.5px; page-break-inside: avoid; }
+  .precedent b { color: #1d7a4f; }
+  .phase { display:inline-block; border-radius: 3px; padding: 0px 7px; font-size: 8.5px; font-weight: bold; color:#fff; vertical-align: 2px; }
+  .p1 { background:#2eb872; } .p2 { background:#0f3460; } .p3 { background:#8d6cab; } .p4 { background:#999; }
+  .pagebreak { page-break-before: always; }
+  .mermaid { text-align: center; margin: 10px 0; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 3px 0; }
+  .toc td { border: none; padding: 2px 6px; }
+  .small { font-size: 9px; color:#666; }
+  .legend span { margin-right: 14px; }
+</style>
+</head>
+<body>
+
+<h1>Labelle.tn — E-commerce Data Architecture</h1>
+<div class="subtitle">New entities, their relationships, and how the existing inventory schema is reused</div>
+<div class="meta">Prepared for the Labelle project &nbsp;·&nbsp; June 12, 2026 &nbsp;·&nbsp; Backend: Symfony 5.4 / Doctrine ORM / MySQL &nbsp;·&nbsp; Storefront: Angular (labelle.tn) &nbsp;·&nbsp; Back-office: labelle-inventory-ui</div>
+
+<h2>1. The four questions, answered up front</h2>
+
+<div class="answer">
+<div class="q">Q1 — Category and sub-category: one entity or two?</div>
+<span class="verdict">ONE ENTITY</span> A single <code>store_category</code> table with a nullable <code>parent_id</code> pointing to itself (an "adjacency list"). Your menu is three levels deep (Visage → Peaux → …) and a self-referencing tree handles any depth with one table, one Doctrine entity, and one set of CRUD screens. Two separate tables would hard-code the depth and break the day the client wants a fourth level or wants to move a sub-category up.
+<div class="precedent"><b>Precedent:</b> PrestaShop (<code>ps_category.id_parent</code>), Sylius (<code>Taxon</code> tree), WooCommerce (term hierarchy), Magento — every major platform models categories as one self-referencing entity. None uses a separate sub-category table.</div>
+</div>
+
+<div class="answer">
+<div class="q">Q2 — Product details table joined to the existing product table?</div>
+<span class="verdict">YES — ONE-TO-ONE, OPT-IN</span> A <code>store_product_detail</code> table with a <b>unique</b> FK to <code>product</code>. The inventory <code>product</code> table stays the single source of truth for stock and prices; the detail row adds everything the web needs (descriptions, images, slug, categories, publish flag). Crucially, a product is only on the website <b>if a detail row exists and is published</b> — the warehouse can hold 2,410 SKUs while the shop sells a curated 300. Inventory screens and reports are completely unaffected.
+</div>
+
+<div class="answer">
+<div class="q">Q3 — A separate <code>store_user</code> table for shoppers?</div>
+<span class="verdict">YES — AND LINK IT TO CLIENT</span> Staff and shoppers must never share a credentials table: different auth firewalls, different lifecycle, different risk profile (a leaked shopper password must not be a staff password). One refinement to your idea: keep the existing <code>client</code> table as the <b>customer profile</b> (it already holds every buyer across all channels, keyed by phone), and make <code>store_user</code> the <b>login account</b> that links to a client. A shopper who already bought in the boutique and then registers online gets connected to their full purchase history by phone number.
+<div class="precedent"><b>Precedent:</b> Sylius — the reference Symfony e-commerce framework — splits exactly this way: <code>Customer</code> (profile, may exist without login) vs <code>ShopUser</code> (credentials) vs <code>AdminUser</code> (staff). PrestaShop likewise separates <code>ps_customer</code> from <code>ps_employee</code>. Your <code>client</code> / <code>store_user</code> / <code>user</code> trio maps onto this one-to-one.</div>
+</div>
+
+<div class="answer">
+<div class="q">Q4 — Web orders: reuse the existing <code>t_order</code> table?</div>
+<span class="verdict">YES — EXTEND, DON'T DUPLICATE</span> Reuse <code>t_order</code> as the single financial and stock record, extended two ways: a new <code>source</code> column (<code>manual</code> | <code>web</code> | <code>intigo</code>) and a one-to-one <code>store_order_detail</code> row carrying web-only data (status, shipping address, fee, payment method). Reasons:
+<ul>
+<li><b>Stock:</b> <code>t_order</code> creation already decrements <code>product.quantity</code> atomically. A separate web-order table would need a duplicate of that logic — the #1 source of oversell bugs.</li>
+<li><b>Reporting:</b> every KPI, chart, revenue report, and inventory snapshot reads <code>t_order</code>. Web sales appear in the client's existing dashboards on day one, for free.</li>
+<li><b>Proven pattern:</b> the Intigo marketplace sync already pushes external orders into <code>t_order</code>. The web shop is just a second external channel.</li>
+<li><b>Staff workflow:</b> web orders show up in the existing order list the team uses daily — filterable by source, no second screen to watch.</li>
+</ul>
+<div class="precedent"><b>Precedent:</b> Shopify stores every order from every channel (online store, POS, marketplaces) in <u>one</u> orders table with a <code>source_name</code> column. PrestaShop keeps one <code>ps_orders</code> table and puts state into a separate <code>ps_order_state</code> + <code>ps_order_history</code> pair — which is exactly the status model proposed in §5.</div>
+</div>
+
+<h2>2. Design principles</h2>
+<ul>
+<li><b>One source of truth.</b> Stock = <code>product.quantity</code>. Sales = <code>t_order</code>. Customers = <code>client</code>. New tables <i>decorate</i>, they never duplicate.</li>
+<li><b>Never break the inventory app.</b> Every change to an existing table is additive (new nullable/defaulted columns only). Existing screens, services and reports keep working unmodified.</li>
+<li><b>Visual and namespace separation.</b> Every new table is prefixed <code>store_</code>. In the back-office, the e-commerce module lives in its own sidebar group; in the schema, the prefix gives the same separation.</li>
+<li><b>Snapshot what history must not rewrite.</b> Orders copy the shipping address, prices, fees and discount amounts at purchase time. Editing a customer's address must never change a shipped order. (<code>t_order</code> already does this for client name/phone — the pattern is extended, not invented.)</li>
+<li><b>Proper <code>utf8mb4</code> from day one.</b> All new tables are created with <code>utf8mb4_unicode_ci</code> so the legacy <code>Utf8Encoder</code> workaround is never needed on the new API surface.</li>
+<li><b>Money columns are <code>DECIMAL(10,3)</code>.</b> The Tunisian dinar has 3 decimals (millimes). Legacy float columns stay as they are; new ones do it right.</li>
+<li><b>Deliberately no EAV, no variants engine.</b> Magento's attribute-value model is the canonical example of flexibility nobody asked for becoming everyone's performance problem. Each sellable item here is one inventory product with its own barcode — which is how the warehouse already works. See §8 for the escape hatch if variants are ever needed.</li>
+</ul>
+
+<h2>3. The big picture</h2>
+<div class="legend small"><span>■ White = existing tables (unchanged or additive-only)</span><span>■ <code>store_*</code> = new tables</span></div>
+<pre class="mermaid">
+erDiagram
+    PRODUCT ||--o| STORE_PRODUCT_DETAIL : "published on web via"
+    STORE_PRODUCT_DETAIL }o--o{ STORE_CATEGORY : "shown in"
+    STORE_CATEGORY |o--o{ STORE_CATEGORY : "parent of"
+    STORE_PRODUCT_DETAIL ||--o{ STORE_PRODUCT_IMAGE : has
+    STORE_BRAND |o--o{ STORE_PRODUCT_DETAIL : brands
+    CLIENT ||--o{ T_ORDER : places
+    T_ORDER ||--o{ ORDER_TO_PRODUCT : contains
+    PRODUCT ||--o{ ORDER_TO_PRODUCT : "line item"
+    T_ORDER ||--o| STORE_ORDER_DETAIL : "web data"
+    STORE_ORDER_DETAIL }o--|| STORE_ORDER_STATUS : "current status"
+    STORE_ORDER_DETAIL ||--o{ STORE_ORDER_STATUS_HISTORY : "audit trail"
+    STORE_ORDER_DETAIL }o--o| STORE_DISCOUNT_CODE : "used code"
+    STORE_USER |o--o| CLIENT : "login account for"
+    STORE_USER ||--o{ STORE_ADDRESS : saves
+    STORE_ADDRESS }o--|| STORE_DELIVERY_ZONE : "in zone"
+    STORE_USER ||--o| STORE_CART : has
+    STORE_CART ||--o{ STORE_CART_ITEM : contains
+    PRODUCT ||--o{ STORE_CART_ITEM : references
+    STORE_USER ||--o{ STORE_WISHLIST_ITEM : wants
+    PRODUCT ||--o{ STORE_WISHLIST_ITEM : references
+    T_ORDER ||--o{ STORE_PAYMENT_TRANSACTION : "paid via"
+</pre>
+<div class="small" style="text-align:center">Existing tables not shown (untouched): <code>user</code>, <code>role</code>, <code>product_history</code>, <code>broken_product</code>, <code>document</code>, <code>folder</code>, <code>inventory_snapshot</code>. Support tables not shown: <code>store_setting</code>, <code>store_contact_message</code>, <code>store_email_log</code>, <code>store_newsletter_subscription</code>, <code>store_product_review</code>, <code>store_banner</code>.</div>
+
+<div class="note"><b>Build phases used throughout this document:</b>
+<span class="phase p1">PHASE 1</span> Catalog — the storefront stops using static data &nbsp;
+<span class="phase p2">PHASE 2</span> Checkout — guest orders, COD &nbsp;
+<span class="phase p3">PHASE 3</span> Accounts — login, addresses, wishlist, cart sync &nbsp;
+<span class="phase p4">PHASE 4</span> Growth — promo codes, online payment, reviews, banners
+</div>
+
+<div class="pagebreak"></div>
+<h2>4. Catalog entities <span class="phase p1">PHASE 1</span></h2>
+
+<h3>4.1 <code>store_category</code> — one tree for categories and sub-categories</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>parent_id</code></td><td>INT NULL, FK → store_category.id</td><td>NULL = root category. <code>ON DELETE RESTRICT</code> — a category with children cannot be deleted by accident.</td></tr>
+<tr><td><code>name</code></td><td>VARCHAR(128)</td><td>"Visage", "Peaux", …</td></tr>
+<tr><td><code>slug</code></td><td>VARCHAR(160) UNIQUE</td><td>URL segment; the storefront already routes like <code>/3-visage</code> — slugs replace the scraped numeric links.</td></tr>
+<tr><td><code>description</code></td><td>TEXT NULL</td><td>Optional intro text on the category page (good for SEO).</td></tr>
+<tr><td><code>image</code></td><td>VARCHAR(255) NULL</td><td>Banner/thumbnail path.</td></tr>
+<tr><td><code>position</code></td><td>INT DEFAULT 0</td><td>Manual ordering inside the parent.</td></tr>
+<tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td>Hide a whole branch without deleting it.</td></tr>
+<tr><td><code>created_at / updated_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+<p>The storefront menu (currently the hard-coded <code>MENU</code> array) is built by one query ordered by <code>parent_id, position</code> and assembled into a tree in PHP — at this catalog size (~40 categories) no nested-set optimization is warranted.</p>
+
+<h3>4.2 <code>store_product_detail</code> — the product's web identity</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>product_id</code></td><td>INT <b>UNIQUE</b>, FK → product.id</td><td>One-to-one. <code>ON DELETE CASCADE</code> — deleting an inventory product removes its web presence.</td></tr>
+<tr><td><code>slug</code></td><td>VARCHAR(180) UNIQUE</td><td>e.g. <code>creme-hydratante-50ml</code>; replaces scraped numeric product links.</td></tr>
+<tr><td><code>display_name</code></td><td>VARCHAR(180) NULL</td><td>Customer-facing name. NULL → falls back to <code>product.name</code> (warehouse names are often abbreviated; the web name can be prettier without touching inventory data).</td></tr>
+<tr><td><code>card_name</code></td><td>VARCHAR(80) NULL</td><td>Short name for product cards (your <code>Product.cardName</code> field).</td></tr>
+<tr><td><code>short_description</code></td><td>TEXT NULL</td><td>Bullet lines under the title (storefront already renders <code>shortDescription[]</code>).</td></tr>
+<tr><td><code>description</code></td><td>LONGTEXT NULL</td><td>Full HTML description tab.</td></tr>
+<tr><td><code>brand_id</code></td><td>INT NULL, FK → store_brand.id</td><td><code>ON DELETE SET NULL</code>. Beauty shoppers filter by brand constantly — cheap now, painful to retrofit.</td></tr>
+<tr><td><code>default_category_id</code></td><td>INT NULL, FK → store_category.id</td><td>The category used for the breadcrumb when a product is in several categories. <code>ON DELETE SET NULL</code>. (PrestaShop: <code>id_category_default</code>.)</td></tr>
+<tr><td><code>promo_price</code></td><td>DECIMAL(10,3) NULL</td><td>Sale price. NULL = sells at <code>product.selling_price</code>. The web <b>never overrides</b> the base price — it comes from inventory; promo is an explicit, time-boxed exception.</td></tr>
+<tr><td><code>promo_starts_at / promo_ends_at</code></td><td>DATETIME NULL</td><td>Both NULL = promo always on (while <code>promo_price</code> set).</td></tr>
+<tr><td><code>is_published</code></td><td>TINYINT(1) DEFAULT 0</td><td>The master switch. Draft until a human says go.</td></tr>
+<tr><td><code>is_featured</code></td><td>TINYINT(1) DEFAULT 0</td><td>Feeds the homepage "featured products" block.</td></tr>
+<tr><td><code>meta_title / meta_description</code></td><td>VARCHAR(255) NULL</td><td>SEO overrides.</td></tr>
+<tr><td><code>created_at / updated_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+<div class="note"><b>What the storefront reads per product:</b> name/cardName/descriptions/images/slug from <code>store_product_detail</code>; <code>price</code> from <code>product.selling_price</code> (or active <code>promo_price</code>); <code>inStock</code>/<code>stock</code> from <code>product.quantity</code>. Because orders decrement <code>product.quantity</code> at creation (§5.4), the displayed stock is always real — no separate "reserved stock" table is needed.</div>
+
+<h3>4.3 <code>store_product_to_category</code> — many-to-many junction</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>product_detail_id</code></td><td>INT, FK → store_product_detail.id</td><td>Composite PK with <code>category_id</code>; <code>ON DELETE CASCADE</code> both sides.</td></tr>
+<tr><td><code>category_id</code></td><td>INT, FK → store_category.id</td><td>A product can sit in "Soins visage" <i>and</i> "Promotions" <i>and</i> "Nouveautés".</td></tr>
+</table>
+
+<h3>4.4 <code>store_product_image</code></h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>product_detail_id</code></td><td>INT, FK → store_product_detail.id</td><td><code>ON DELETE CASCADE</code>.</td></tr>
+<tr><td><code>path</code></td><td>VARCHAR(255)</td><td>File on disk under the backend's <code>public/uploads/products/</code> — same disk-plus-metadata pattern as the existing <code>document</code> module. Upload from the back-office; resize to card/large variants at upload time.</td></tr>
+<tr><td><code>alt</code></td><td>VARCHAR(160) NULL</td><td>SEO/accessibility.</td></tr>
+<tr><td><code>position</code></td><td>INT DEFAULT 0</td><td>Gallery order.</td></tr>
+<tr><td><code>is_cover</code></td><td>TINYINT(1) DEFAULT 0</td><td>The card image. Exactly one per product (enforced in service code).</td></tr>
+</table>
+
+<h3>4.5 <code>store_brand</code></h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>name</code></td><td>VARCHAR(128)</td><td></td></tr>
+<tr><td><code>slug</code></td><td>VARCHAR(160) UNIQUE</td><td>Brand listing page <code>/marque/avene</code>.</td></tr>
+<tr><td><code>logo</code></td><td>VARCHAR(255) NULL</td><td></td></tr>
+<tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td></td></tr>
+</table>
+
+<h3>4.6 <code>store_setting</code> — key-value configuration</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>name</code></td><td>VARCHAR(64) PK</td><td>e.g. <code>shipping_default_fee</code>, <code>free_shipping_threshold</code>, <code>store_email</code>, <code>store_phone</code>, <code>cod_enabled</code>, <code>maintenance_mode</code>.</td></tr>
+<tr><td><code>value</code></td><td>TEXT</td><td></td></tr>
+</table>
+<p class="small">Keeps one-off knobs out of code and out of dedicated single-row tables. Same idea as PrestaShop's <code>ps_configuration</code> / WooCommerce options.</p>
+
+<div class="pagebreak"></div>
+<h2>5. Orders &amp; checkout entities <span class="phase p2">PHASE 2</span></h2>
+
+<h3>5.1 Changes to existing <code>t_order</code> (additive only)</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>source</code></td><td>VARCHAR(16) NOT NULL DEFAULT 'manual'</td><td>Values: <code>manual</code>, <code>web</code>, <code>intigo</code>. Existing rows become <code>manual</code> automatically; Intigo rows can be backfilled if identifiable. Indexed — the back-office filters on it. <i>(Shopify's <code>source_name</code>, PrestaShop's order origin.)</i></td></tr>
+</table>
+<p><b>Nothing else changes.</b> <code>delivered</code> and <code>payment_received</code> keep their meaning and keep driving every existing report. For web orders they become <i>derived</i> flags, synced automatically from the status workflow (§5.3) so all dashboards stay correct without modification.</p>
+
+<h3>5.2 <code>store_order_detail</code> — web-only order data, one-to-one with <code>t_order</code></h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>order_id</code></td><td>INT <b>UNIQUE</b>, FK → t_order.id</td><td><code>ON DELETE CASCADE</code>. Exists only for <code>source='web'</code> orders.</td></tr>
+<tr><td><code>store_user_id</code></td><td>INT NULL, FK → store_user.id</td><td>NULL = guest checkout. <code>ON DELETE SET NULL</code> (account deletion must not delete sales records).</td></tr>
+<tr><td><code>status_id</code></td><td>INT, FK → store_order_status.id</td><td>Current state; full trail in history table.</td></tr>
+<tr><td><code>payment_method</code></td><td>VARCHAR(24) DEFAULT 'cod'</td><td><code>cod</code> now; <code>card_online</code> when a PSP is added (§7.2).</td></tr>
+<tr><td><code>shipping_fee</code></td><td>DECIMAL(10,3)</td><td>Snapshot at checkout (zone fees may change later).</td></tr>
+<tr><td><code>discount_code_id</code></td><td>INT NULL, FK → store_discount_code.id</td><td><code>ON DELETE SET NULL</code>.</td></tr>
+<tr><td><code>discount_amount</code></td><td>DECIMAL(10,3) NULL</td><td>Snapshot of the money actually deducted.</td></tr>
+<tr><td><code>customer_email</code></td><td>VARCHAR(180) NULL</td><td>For confirmation emails; guests have no account row.</td></tr>
+<tr><td><code>ship_first_name / ship_last_name</code></td><td>VARCHAR(100)</td><td rowspan="4">Address <b>snapshot</b> — copied from the chosen/entered address at checkout. The saved address can be edited or deleted later; the order keeps what was shipped. (<code>t_order</code> already snapshots client name/phone — same philosophy.)</td></tr>
+<tr><td><code>ship_phone</code></td><td>VARCHAR(20)</td></tr>
+<tr><td><code>ship_address_line / ship_city</code></td><td>VARCHAR(255) / VARCHAR(100)</td></tr>
+<tr><td><code>ship_governorate / ship_postal_code</code></td><td>VARCHAR(64) / VARCHAR(10)</td></tr>
+<tr><td><code>customer_note</code></td><td>TEXT NULL</td><td>"Call before delivery", etc.</td></tr>
+<tr><td><code>tracking_number</code></td><td>VARCHAR(64) NULL</td><td>Courier reference (Intigo/Aramex/First Delivery).</td></tr>
+<tr><td><code>created_at / updated_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+
+<h3>5.3 <code>store_order_status</code> + <code>store_order_status_history</code></h3>
+<p>Statuses live in a <b>table, not an enum</b>, with behavior flags — so adding a state ("awaiting exchange") or changing which state triggers an email is data entry, not a deployment.</p>
+<table>
+<tr><th>store_order_status</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>code</code></td><td>VARCHAR(32) UNIQUE</td><td>Stable machine name used in code and as frontend translation key.</td></tr>
+<tr><td><code>label_fr</code></td><td>VARCHAR(64)</td><td>Shown in emails and back-office (UI also has its own i18n).</td></tr>
+<tr><td><code>color</code></td><td>VARCHAR(7)</td><td>Badge color in the back-office list.</td></tr>
+<tr><td><code>position</code></td><td>INT</td><td>Display order.</td></tr>
+<tr><td><code>is_final</code></td><td>TINYINT(1)</td><td>No transitions allowed out (delivered, cancelled, returned).</td></tr>
+<tr><td><code>restocks</code></td><td>TINYINT(1)</td><td>Entering this status returns the items to <code>product.quantity</code> (cancelled, returned).</td></tr>
+<tr><td><code>sets_delivered</code></td><td>TINYINT(1)</td><td>Syncs <code>t_order.delivered = 1</code> — keeps every existing report correct.</td></tr>
+<tr><td><code>sets_payment_received</code></td><td>TINYINT(1)</td><td>Syncs <code>t_order.payment_received = 1</code> (COD: collected on delivery).</td></tr>
+<tr><td><code>sends_email</code></td><td>TINYINT(1)</td><td>Notify the customer on entry (template = <code>code</code>).</td></tr>
+</table>
+<div class="precedent"><b>Precedent:</b> this is PrestaShop's <code>ps_order_state</code> almost verbatim — its rows carry <code>paid</code>, <code>shipped</code>, <code>delivery</code>, <code>send_email</code> flags that drive behavior, and <code>ps_order_history</code> records every transition. It is the most battle-tested order-state model in e-commerce.</div>
+<p><b>Seed statuses:</b> <code>pending</code> (new, stock already taken) → <code>confirmed</code> (staff called the customer — the COD norm in Tunisia) → <code>shipped</code> (sets_delivered? no — tracking set) → <code>delivered</code> (sets_delivered + sets_payment_received for COD) → terminal; plus <code>cancelled</code> and <code>returned</code> (both <code>restocks=1</code>).</p>
+<table>
+<tr><th>store_order_status_history</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>order_detail_id</code></td><td>INT, FK → store_order_detail.id</td><td><code>ON DELETE CASCADE</code>.</td></tr>
+<tr><td><code>status_id</code></td><td>INT, FK → store_order_status.id</td><td></td></tr>
+<tr><td><code>comment</code></td><td>VARCHAR(255) NULL</td><td>"Client unreachable, retry tomorrow".</td></tr>
+<tr><td><code>changed_by</code></td><td>VARCHAR(64) NULL</td><td>Staff username, <code>customer</code>, or <code>system</code>.</td></tr>
+<tr><td><code>created_at</code></td><td>DATETIME</td><td>Answers "when did we ship?" and measures fulfillment speed.</td></tr>
+</table>
+
+<h3>5.4 Checkout flow — how a web order is born</h3>
+<ul>
+<li>Checkout calls the <b>existing order-creation service</b> (the same code path used by manual orders and Intigo), with <code>source='web'</code>. Stock decrements, <code>sold_units</code> updates, the client is upserted by phone — all existing, tested logic.</li>
+<li>The same transaction inserts <code>store_order_detail</code> (status <code>pending</code>, address snapshot, shipping fee from the zone table) and the first history row.</li>
+<li>Stock is taken at order creation — identical to today's behavior, so two simultaneous shoppers cannot buy the last unit. Cancellation restocks via the <code>restocks</code> flag.</li>
+<li>The existing 5-second duplicate-order guard protects against double-submit on the web too.</li>
+<li>Order confirmation email is queued (§6.4).</li>
+</ul>
+
+<h3>5.5 <code>store_delivery_zone</code></h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>name</code></td><td>VARCHAR(64) UNIQUE</td><td>The 24 Tunisian governorates, seeded.</td></tr>
+<tr><td><code>fee</code></td><td>DECIMAL(10,3)</td><td>e.g. 7.000 DT Grand Tunis, 9.000 DT elsewhere.</td></tr>
+<tr><td><code>free_above</code></td><td>DECIMAL(10,3) NULL</td><td>Free shipping threshold per zone; NULL = use global setting.</td></tr>
+<tr><td><code>estimated_days</code></td><td>VARCHAR(16) NULL</td><td>"24–48h" shown at checkout.</td></tr>
+<tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td>Stop delivering somewhere without deleting history.</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+<h2>6. Customer account entities <span class="phase p3">PHASE 3</span></h2>
+
+<h3>6.1 <code>store_user</code> — shopper login accounts</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>email</code></td><td>VARCHAR(180) UNIQUE</td><td>Login identifier (staff log in by username; shoppers by email).</td></tr>
+<tr><td><code>password</code></td><td>VARCHAR(255)</td><td>bcrypt via Symfony's hasher. Separate firewall + user provider in <code>security.yaml</code>; the shop JWT carries <code>ROLE_CUSTOMER</code> only and is useless against staff endpoints.</td></tr>
+<tr><td><code>first_name / last_name</code></td><td>VARCHAR(100)</td><td></td></tr>
+<tr><td><code>phone</code></td><td>VARCHAR(20)</td><td>Used to link to <code>client</code>.</td></tr>
+<tr><td><code>client_id</code></td><td>INT NULL <b>UNIQUE</b>, FK → client.id</td><td><code>ON DELETE SET NULL</code>. Linked at registration (phone match) or on first order. Gives the back-office one unified purchase history per human across boutique + web + marketplace.</td></tr>
+<tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td>Soft-disable abusive accounts.</td></tr>
+<tr><td><code>reset_token / reset_token_expires_at</code></td><td>VARCHAR(64) NULL / DATETIME NULL</td><td>Password-reset flow (token hashed at rest).</td></tr>
+<tr><td><code>created_at / last_login_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+<div class="note"><b>Why not put credentials on <code>client</code>?</b> 4,000+ client rows exist that never asked for an account; mixing auth columns into an operational table couples the inventory app to web security concerns (password column in every staff-visible query, accidental serialization, GDPR-style deletion requests hitting sales history). Sylius learned this the hard way and split Customer/ShopUser; we start split.</div>
+
+<h3>6.2 <code>store_address</code> — saved address book</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>store_user_id</code></td><td>INT, FK → store_user.id</td><td><code>ON DELETE CASCADE</code> — addresses die with the account (orders keep their snapshot).</td></tr>
+<tr><td><code>label</code></td><td>VARCHAR(32) NULL</td><td>"Maison", "Bureau".</td></tr>
+<tr><td><code>first_name / last_name / phone</code></td><td>VARCHAR</td><td>Recipient may differ from account holder (gifts).</td></tr>
+<tr><td><code>address_line / city / postal_code</code></td><td>VARCHAR</td><td></td></tr>
+<tr><td><code>delivery_zone_id</code></td><td>INT, FK → store_delivery_zone.id</td><td><code>ON DELETE RESTRICT</code>; drives the fee shown at checkout.</td></tr>
+<tr><td><code>is_default</code></td><td>TINYINT(1) DEFAULT 0</td><td></td></tr>
+</table>
+
+<h3>6.3 <code>store_cart</code> / <code>store_cart_item</code> + <code>store_wishlist_item</code></h3>
+<p>Guests keep the current <code>localStorage</code> cart — zero backend cost, works today. Logged-in users get a server cart that survives devices; on login the local cart is <b>merged</b> into the server cart (quantities added, then localStorage cleared). This is the Shopify/PrestaShop behavior users expect.</p>
+<table>
+<tr><th>store_cart</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>store_user_id</code></td><td>INT <b>UNIQUE</b>, FK → store_user.id</td><td>One active cart per account. <code>ON DELETE CASCADE</code>.</td></tr>
+<tr><td><code>created_at / updated_at</code></td><td>DATETIME</td><td><code>updated_at</code> enables abandoned-cart reporting later.</td></tr>
+</table>
+<table>
+<tr><th>store_cart_item</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>cart_id</code></td><td>INT, FK → store_cart.id</td><td><code>ON DELETE CASCADE</code>; UNIQUE(<code>cart_id</code>, <code>product_id</code>).</td></tr>
+<tr><td><code>product_id</code></td><td>INT, FK → product.id</td><td><code>ON DELETE CASCADE</code>.</td></tr>
+<tr><td><code>quantity</code></td><td>INT</td><td><b>No price column</b> — carts always display the live price; the only price snapshot happens at order creation. Stale cart prices are a classic source of disputes.</td></tr>
+</table>
+<table>
+<tr><th>store_wishlist_item</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>store_user_id</code></td><td>INT, FK → store_user.id</td><td><code>ON DELETE CASCADE</code>; UNIQUE(<code>store_user_id</code>, <code>product_id</code>).</td></tr>
+<tr><td><code>product_id</code></td><td>INT, FK → product.id</td><td><code>ON DELETE CASCADE</code>.</td></tr>
+<tr><td><code>created_at</code></td><td>DATETIME</td><td>The existing <code>wishlist.service.ts</code> keeps localStorage for guests; syncs on login like the cart.</td></tr>
+</table>
+
+<h3>6.4 Mail: <code>store_email_log</code> + <code>store_contact_message</code></h3>
+<p>Email <b>templates are Twig files</b> in the repo (versioned, reviewable — like the existing invoice template), not DB rows. What goes in the DB is the <b>log</b>: shared-hosting SMTP fails silently often enough that "did the customer get the confirmation?" must be answerable from the back-office. <code>symfony/mailer</code> is already installed.</p>
+<table>
+<tr><th>store_email_log</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>recipient / subject</code></td><td>VARCHAR</td><td></td></tr>
+<tr><td><code>template</code></td><td>VARCHAR(64)</td><td><code>order_confirmation</code>, <code>order_shipped</code>, <code>password_reset</code>, <code>welcome</code>, <code>contact_copy</code>.</td></tr>
+<tr><td><code>order_id</code></td><td>INT NULL, FK → t_order.id</td><td>Jump from an order to its emails. <code>ON DELETE SET NULL</code>.</td></tr>
+<tr><td><code>status</code></td><td>VARCHAR(12)</td><td><code>sent</code> / <code>failed</code> (with <code>error</code> TEXT NULL).</td></tr>
+<tr><td><code>created_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+<table>
+<tr><th>store_contact_message</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td>Backs the storefront's existing contact page.</td></tr>
+<tr><td><code>name / email / phone</code></td><td>VARCHAR (phone NULL)</td><td></td></tr>
+<tr><td><code>subject / message</code></td><td>VARCHAR / TEXT</td><td></td></tr>
+<tr><td><code>is_read</code></td><td>TINYINT(1) DEFAULT 0</td><td>Inbox-style screen in the back-office module.</td></tr>
+<tr><td><code>created_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+
+<div class="pagebreak"></div>
+<h2>7. Growth entities <span class="phase p4">PHASE 4</span> <span class="small">(designed now, built when needed)</span></h2>
+
+<h3>7.1 <code>store_discount_code</code></h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code> / <code>code</code></td><td>INT PK / VARCHAR(32) UNIQUE</td><td>Case-insensitive lookup.</td></tr>
+<tr><td><code>type</code></td><td>VARCHAR(8)</td><td><code>percent</code> | <code>fixed</code> — mirrors the two discount modes the PDF invoice already supports.</td></tr>
+<tr><td><code>value</code></td><td>DECIMAL(10,3)</td><td></td></tr>
+<tr><td><code>min_order_amount</code></td><td>DECIMAL(10,3) NULL</td><td></td></tr>
+<tr><td><code>starts_at / ends_at</code></td><td>DATETIME NULL</td><td></td></tr>
+<tr><td><code>max_uses / times_used / max_uses_per_user</code></td><td>INT NULL / INT / INT NULL</td><td>Per-user limit checked against <code>store_order_detail.discount_code_id</code>.</td></tr>
+<tr><td><code>is_active</code></td><td>TINYINT(1) DEFAULT 1</td><td></td></tr>
+</table>
+
+<h3>7.2 <code>store_payment_transaction</code></h3>
+<p>For when online card payment arrives (Tunisian PSPs: Paymee, Konnect, ClicToPay). COD needs no row here — <code>t_order.payment_received</code> already covers it.</p>
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>INT PK AI</td><td></td></tr>
+<tr><td><code>order_id</code></td><td>INT, FK → t_order.id</td><td>One order may have several attempts (failed → retry). <code>ON DELETE RESTRICT</code> — never lose money trails.</td></tr>
+<tr><td><code>provider / provider_ref</code></td><td>VARCHAR(24) / VARCHAR(128)</td><td>PSP name + their transaction id.</td></tr>
+<tr><td><code>amount</code></td><td>DECIMAL(10,3)</td><td></td></tr>
+<tr><td><code>status</code></td><td>VARCHAR(12)</td><td><code>initiated</code> / <code>success</code> / <code>failed</code> / <code>refunded</code>.</td></tr>
+<tr><td><code>payload</code></td><td>JSON NULL</td><td>Raw PSP callback, for dispute forensics.</td></tr>
+<tr><td><code>created_at / updated_at</code></td><td>DATETIME</td><td></td></tr>
+</table>
+
+<h3>7.3 Smaller tables</h3>
+<table>
+<tr><th>Table</th><th>Columns</th><th>Purpose</th></tr>
+<tr><td><code>store_product_review</code></td><td>id, product_id FK, store_user_id FK NULL, rating TINYINT, title, body, is_approved, created_at</td><td>Reviews with back-office moderation (<code>is_approved</code> default 0).</td></tr>
+<tr><td><code>store_banner</code></td><td>id, image, link, title NULL, position, is_active, starts_at/ends_at NULL</td><td>Homepage slider/banners managed from the back-office instead of redeploys.</td></tr>
+<tr><td><code>store_newsletter_subscription</code></td><td>id, email UNIQUE, is_active, created_at, unsubscribed_at NULL</td><td>Footer signup form.</td></tr>
+</table>
+
+<h2>8. Existing entities — reuse map</h2>
+<table>
+<tr><th>Existing table</th><th>Role in the e-commerce app</th><th>Changes</th></tr>
+<tr><td><code>product</code></td><td>Single source of truth for stock (<code>quantity</code>), base price (<code>selling_price</code>), cost (<code>buying_price</code>, never exposed publicly), code, sold units. Web visibility = has a published <code>store_product_detail</code>.</td><td><b>None.</b></td></tr>
+<tr><td><code>t_order</code></td><td>Every sale from every channel. Web checkout calls the existing creation service → stock, KPIs, charts, Excel exports and invoices all keep working.</td><td>Add <code>source</code> VARCHAR(16) DEFAULT 'manual'. <code>delivered</code>/<code>payment_received</code> become synced flags for web orders.</td></tr>
+<tr><td><code>order_to_product</code></td><td>Order lines for web orders too — quantity + selling price per line, exactly as today.</td><td><b>None.</b></td></tr>
+<tr><td><code>client</code></td><td>The customer profile across all channels, still keyed by phone, still auto-upserted at order creation. Web guest checkout uses the same upsert. <code>store_user</code> links to it for logged-in shoppers.</td><td><b>None.</b> (Its free-text <code>address</code> column stays for inventory use; structured addresses live in <code>store_address</code> / order snapshots.)</td></tr>
+<tr><td><code>user</code> / <code>role</code></td><td>Staff only, exactly as today. Back-office e-commerce screens are gated by the existing roles (e.g. content editing for MANAGER+).</td><td><b>None.</b></td></tr>
+<tr><td><code>product_history</code>, <code>broken_product</code>, <code>inventory_snapshot</code>, <code>document</code>, <code>folder</code></td><td>Untouched. Restocks and damage flow into stock as today; snapshots/reports automatically include web revenue because it lives in <code>t_order</code>.</td><td><b>None.</b></td></tr>
+</table>
+
+<h2>9. Deliberate simplifications (and their escape hatches)</h2>
+<table>
+<tr><th>Not building</th><th>Why</th><th>If it's ever needed</th></tr>
+<tr><td>Product variants engine (size/shade matrices)</td><td>Each variant already exists as its own inventory product with its own barcode — that's how the warehouse scans and counts. A variants layer would duplicate stock-keeping.</td><td>Add <code>variant_group</code> VARCHAR NULL on <code>store_product_detail</code>; storefront groups rows sharing it into one page with a selector. No migration of existing data needed.</td></tr>
+<tr><td>EAV / dynamic attributes (Magento-style)</td><td>Killed many shops' performance for flexibility a 300-product beauty store never uses.</td><td>A nullable JSON <code>attributes</code> column on <code>store_product_detail</code> covers "Contenance: 50ml" display tables.</td></tr>
+<tr><td>Multi-currency / multi-language content</td><td>TND only; content in French (UI chrome is already translatable in the Angular apps).</td><td>Add <code>store_product_detail_translation</code> later; slugs already unique per row.</td></tr>
+<tr><td>Reserved-stock / inventory holds</td><td>Stock decrements at order creation (existing behavior), so nothing needs reserving.</td><td>Only relevant if checkout ever stops creating orders immediately (e.g. pay-first flows) — then add a <code>reserved_until</code> on cart items.</td></tr>
+<tr><td>Server-side guest carts</td><td>localStorage works today, zero backend load, no session GC.</td><td><code>store_cart.store_user_id</code> is already nullable-ready; add a <code>token</code> column and a cookie.</td></tr>
+</table>
+
+<h2>10. Decisions to confirm before Phase 1 starts</h2>
+<ul>
+<li><b>Image storage:</b> proposed = backend disk under <code>public/uploads/products/</code> (same pattern as Documents), resized at upload. Confirm hosting disk space is adequate for ~300 products × 2–3 images.</li>
+<li><b>Brand entity in Phase 1?</b> Cheap now; confirm the client wants brand filtering/pages.</li>
+<li><b>Who curates content?</b> Publishing 300 products (photos, descriptions) is the real project bottleneck — decide who does data entry and whether to import anything from the old PrestaShop database (<code>fpmiqfdv_inventory.sql</code> sits in the workspace; the old shop's <code>ps_product_lang</code> descriptions and images may be importable, saving weeks).</li>
+<li><b>Order numbering:</b> web orders share <code>t_order.id</code> sequence with manual orders. If the client wants "WEB-1024"-style references, add a display-reference column on <code>store_order_detail</code> — decide before first real order.</li>
+<li><b>Prod PHP upgrade</b> (7.3 → 8.1/8.2) before the public API goes live — already discussed; affects dependency security patching, not this schema.</li>
+</ul>
+
+<h2>11. Suggested build order</h2>
+<table>
+<tr><th>#</th><th>Scope</th><th>Tables</th><th>Outcome</th></tr>
+<tr><td>1</td><td><span class="phase p1">PHASE 1</span> Catalog schema + Doctrine migrations + public read API (<code>/api/shop/*</code>: category tree, category products, product by slug, search) + back-office "Boutique" module (categories, product publishing, images)</td><td><code>store_category</code>, <code>store_product_detail</code>, <code>store_product_to_category</code>, <code>store_product_image</code>, <code>store_brand</code>, <code>store_setting</code></td><td>Storefront drops <code>catalog-data.ts</code>; the site shows real, staff-managed products.</td></tr>
+<tr><td>2</td><td><span class="phase p2">PHASE 2</span> Guest checkout (COD), order statuses + history, delivery zones, transactional email, contact form</td><td><code>t_order.source</code>, <code>store_order_detail</code>, <code>store_order_status(+history)</code>, <code>store_delivery_zone</code>, <code>store_email_log</code>, <code>store_contact_message</code></td><td>The site sells. Staff manage web orders inside the inventory app.</td></tr>
+<tr><td>3</td><td><span class="phase p3">PHASE 3</span> Accounts: registration/login (separate JWT firewall), address book, order history page, wishlist + cart sync, password reset. Unlocks the template's auth-gated pages.</td><td><code>store_user</code>, <code>store_address</code>, <code>store_cart(+items)</code>, <code>store_wishlist_item</code></td><td>Full customer experience; client↔account linking gives unified history.</td></tr>
+<tr><td>4</td><td><span class="phase p4">PHASE 4</span> Promo codes, online payment, reviews, banners, newsletter</td><td><code>store_discount_code</code>, <code>store_payment_transaction</code>, <code>store_product_review</code>, <code>store_banner</code>, <code>store_newsletter_subscription</code></td><td>Marketing &amp; growth tooling.</td></tr>
+</table>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', er: { fontSize: 11 } });
+</script>
+</body>
+</html>

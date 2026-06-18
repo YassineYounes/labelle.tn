@@ -1,35 +1,33 @@
 import { Component, computed, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
-import { PRODUCTS, Product } from '../../data/site-data';
-import { CATALOG_PRODUCTS } from '../../data/catalog-data';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { map, switchMap } from 'rxjs';
+import { Product } from '../../data/site-data';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { CatalogService } from '../../services/catalog.service';
 
 export type ListingKind = 'new' | 'best' | 'promo';
 
-interface ListingConfig {
+interface ListingMeta {
   title: string;
   script: string;
-  products: Product[];
-  emptyMessage?: string;
+  emptyMessage: string;
 }
 
-const CONFIGS: Record<ListingKind, ListingConfig> = {
+const META: Record<ListingKind, ListingMeta> = {
   new: {
     title: 'Nouveaux produits',
     script: 'Les dernières arrivées',
-    products: [...CATALOG_PRODUCTS].sort((a, b) => b.id - a.id),
+    emptyMessage: "Il n'y a pas encore de nouveaux produits. Revenez bientôt !",
   },
   best: {
     title: 'Meilleures ventes',
     script: 'Les favoris de nos clientes',
-    products: PRODUCTS,
+    emptyMessage: 'Aucune vente pour le moment.',
   },
   promo: {
     title: 'Promotions',
     script: 'Nos bons plans',
-    products: [],
     emptyMessage: "Il n'y a actuellement aucune promotion. Revenez bientôt !",
   },
 };
@@ -42,10 +40,18 @@ const CONFIGS: Record<ListingKind, ListingConfig> = {
 })
 export class ListingComponent {
   private route = inject(ActivatedRoute);
+  private catalog = inject(CatalogService);
 
   private kind = toSignal(this.route.data.pipe(map((data) => data['kind'] as ListingKind)), {
     initialValue: 'new' as ListingKind,
   });
 
-  config = computed(() => CONFIGS[this.kind()]);
+  private products = toSignal(
+    toObservable(this.kind).pipe(
+      switchMap((kind) => this.catalog.listing(kind, 1, 24).pipe(map((r) => r.products))),
+    ),
+    { initialValue: [] as Product[] },
+  );
+
+  config = computed(() => ({ ...META[this.kind()], products: this.products() }));
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MENU, MenuItem } from '../../data/site-data';
+import { MenuItem } from '../../data/site-data';
+import { CatalogService } from '../../services/catalog.service';
 
 interface SitemapLink {
   label: string;
@@ -14,7 +15,11 @@ interface SitemapLink {
   styleUrl: './sitemap.component.css',
 })
 export class SitemapComponent {
-  menu: MenuItem[] = MENU;
+  menu: MenuItem[] = [];
+
+  constructor(catalog: CatalogService) {
+    catalog.menu().subscribe((menu) => (this.menu = menu));
+  }
 
   offers: SitemapLink[] = [
     { label: 'Nouveaux produits', link: '/nouveaux-produits' },

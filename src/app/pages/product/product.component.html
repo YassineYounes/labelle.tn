@@ -1,3 +1,4 @@
+@if (loaded()) {
 <nav class="breadcrumb-bar">
   <div class="container breadcrumb-inner">
     <ol class="breadcrumbs">
@@ -233,3 +234,8 @@
     </div>
   </div>
 </div>
+} @else {
+  <div class="container product-loading">
+    <p>Chargement du produit…</p>
+  </div>
+}

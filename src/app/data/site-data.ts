@@ -36,6 +36,10 @@ export interface Product {
   stock: number;
   shortDescription: string[];
   description: string[];
+  /** URL slug from the API; absent for the legacy static seed data */
+  slug?: string;
+  /** Original price shown struck-through when a promo price is active */
+  oldPrice?: string;
 }
 
 export const MENU: MenuItem[] = [

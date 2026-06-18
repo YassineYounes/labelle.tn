@@ -1,13 +1,28 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map, of, switchMap } from 'rxjs';
 import { Product } from '../../data/site-data';
-import { ALL_PRODUCTS } from '../../data/catalog';
 import { CartService } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
+import { CatalogService } from '../../services/catalog.service';
 
 type Tab = 'description' | 'details' | 'comments';
+
+const EMPTY_PRODUCT: Product = {
+  id: 0,
+  name: '',
+  cardName: '',
+  image: '',
+  largeImage: '',
+  link: '/',
+  price: '',
+  inStock: false,
+  reference: '',
+  stock: 0,
+  shortDescription: [],
+  description: [],
+};
 
 @Component({
   selector: 'app-product',
@@ -18,24 +33,36 @@ type Tab = 'description' | 'details' | 'comments';
 export class ProductComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private catalog = inject(CatalogService);
 
   private slug = toSignal(this.route.paramMap.pipe(map((params) => params.get('slug') ?? '')), {
     initialValue: '',
   });
 
-  product = computed<Product>(() => {
-    const id = parseInt(this.slug(), 10);
-    const found = ALL_PRODUCTS.find((p) => p.id === id);
-    if (!found) {
-      this.router.navigate(['/']);
-      return ALL_PRODUCTS[0];
-    }
-    return found;
-  });
+  private data = toSignal(
+    toObservable(this.slug).pipe(
+      switchMap((slug) =>
+        slug
+          ? this.catalog.product(slug).pipe(
+              catchError(() => {
+                this.router.navigate(['/']);
+                return of(null);
+              }),
+            )
+          : of(null),
+      ),
+    ),
+    { initialValue: null },
+  );
 
+  loaded = computed(() => this.data() !== null);
+  product = computed<Product>(() => this.data() ?? EMPTY_PRODUCT);
+
+  /** "Next product" / related, pulled from featured (we no longer hold the full list). */
+  private related = toSignal(this.catalog.featured(8), { initialValue: [] as Product[] });
   nextProduct = computed<Product>(() => {
-    const idx = ALL_PRODUCTS.indexOf(this.product());
-    return ALL_PRODUCTS[(idx + 1) % ALL_PRODUCTS.length];
+    const others = this.related().filter((p) => p.id !== this.product().id);
+    return others[0] ?? this.product();
   });
 
   cart = inject(CartService);
@@ -49,13 +76,13 @@ export class ProductComponent {
     if (this.product().stock === 0) {
       return;
     }
-    this.cart.add(this.product().id, this.quantity());
+    this.cart.add(this.product(), this.quantity());
     this.addedToCart.set(true);
     setTimeout(() => this.addedToCart.set(false), 2500);
   }
 
   toggleWishlist(): void {
-    this.wishlist.toggle(this.product().id);
+    this.wishlist.toggle(this.product());
   }
 
   /** Width of the "Dépêchez-vous!" stock bar (the original counts against a max of 20) */

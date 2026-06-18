@@ -18,11 +18,11 @@ export class ProductCardComponent {
 
   addToCart(): void {
     if (this.product().inStock) {
-      this.cart.add(this.product().id);
+      this.cart.add(this.product());
     }
   }
 
   toggleWishlist(): void {
-    this.wishlist.toggle(this.product().id);
+    this.wishlist.toggle(this.product());
   }
 }

@@ -1,16 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
-import { ALL_PRODUCTS } from '../../data/catalog';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { map, of, switchMap } from 'rxjs';
+import { Product } from '../../data/site-data';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
-
-function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}
+import { CatalogService } from '../../services/catalog.service';
 
 @Component({
   selector: 'app-search',
@@ -20,16 +14,21 @@ function normalize(text: string): string {
 })
 export class SearchComponent {
   private route = inject(ActivatedRoute);
+  private catalog = inject(CatalogService);
 
   query = toSignal(this.route.queryParamMap.pipe(map((params) => params.get('s') ?? '')), {
     initialValue: '',
   });
 
-  results = computed(() => {
-    const q = normalize(this.query().trim());
-    if (!q) {
-      return [];
-    }
-    return ALL_PRODUCTS.filter((p) => normalize(p.name).includes(q));
-  });
+  results = toSignal(
+    toObservable(this.query).pipe(
+      switchMap((q) => {
+        const term = q.trim();
+        return term.length < 2
+          ? of([] as Product[])
+          : this.catalog.search(term, 1, 48).pipe(map((r) => r.products));
+      }),
+    ),
+    { initialValue: [] as Product[] },
+  );
 }

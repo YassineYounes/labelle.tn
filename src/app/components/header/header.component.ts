@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MENU, MenuItem } from '../../data/site-data';
+import { MenuItem } from '../../data/site-data';
 import { CartService, formatPrice, parsePrice } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
+import { CatalogService } from '../../services/catalog.service';
 
 @Component({
   selector: 'app-header',
@@ -12,7 +13,7 @@ import { WishlistService } from '../../services/wishlist.service';
   styleUrl: './header.component.css',
 })
 export class HeaderComponent {
-  menu: MenuItem[] = MENU;
+  menu: MenuItem[] = [];
   searchOpen = false;
   searchQuery = '';
   mobileMenuOpen = false;
@@ -21,6 +22,10 @@ export class HeaderComponent {
   cart = inject(CartService);
   wishlist = inject(WishlistService);
   private router = inject(Router);
+
+  constructor(catalog: CatalogService) {
+    catalog.menu().subscribe((menu) => (this.menu = menu));
+  }
 
   formatPrice = formatPrice;
   linePrice = (productPrice: string, qty: number) =>
