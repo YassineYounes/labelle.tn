@@ -116,6 +116,30 @@ export class CatalogService {
       .pipe(map((dto) => this.toProduct(dto)));
   }
 
+  // ---- Persistent wishlist (authenticated; token added by the interceptor) ----
+
+  wishlist(): Observable<Product[]> {
+    return this.http
+      .get<CardDto[]>(`${this.api}/api/account/wishlist`)
+      .pipe(map((cards) => cards.map((c) => this.toProduct(c))));
+  }
+
+  addToWishlist(productId: number): Observable<Product[]> {
+    return this.http
+      .post<CardDto[]>(`${this.api}/api/account/wishlist`, { productId })
+      .pipe(map((cards) => cards.map((c) => this.toProduct(c))));
+  }
+
+  removeFromWishlist(productId: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/api/account/wishlist/${productId}`);
+  }
+
+  mergeWishlist(ids: number[]): Observable<Product[]> {
+    return this.http
+      .post<CardDto[]>(`${this.api}/api/account/wishlist/merge`, { ids })
+      .pipe(map((cards) => cards.map((c) => this.toProduct(c))));
+  }
+
   // ---- Adapters ----
 
   private toMenuItem(node: CategoryDto): MenuItem {

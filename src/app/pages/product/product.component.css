@@ -594,3 +594,47 @@
   font-size: 14px;
   margin: 0 0 12px;
 }
+
+/* ---- Reviews ---- */
+.star.filled::after { content: '\2605'; }
+
+.reviews-pane { padding-top: 6px; }
+.reviews-summary { margin-bottom: 18px; }
+.reviews-average { display: flex; align-items: center; gap: 12px; }
+.reviews-average-num { font-size: 28px; font-weight: 700; color: #3a3a3a; }
+.reviews-average .star-content { display: flex; }
+.reviews-count { color: #8a8a8a; font-size: 13px; }
+
+.reviews-list { list-style: none; padding: 0; margin: 0 0 24px; }
+.review-item { padding: 14px 0; border-top: 1px solid #f0e6e8; }
+.review-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.review-author { font-weight: 600; color: #3a3a3a; font-size: 14px; }
+.review-verified { color: #2e7d32; font-size: 12px; font-weight: 600; }
+.review-date { color: #b2b2b2; font-size: 12px; margin-left: auto; }
+.review-stars { display: flex; margin-bottom: 6px; }
+.review-comment { color: #5a5a5a; font-size: 14px; line-height: 1.6; margin: 0; }
+
+.review-form { border-top: 1px solid #f0e6e8; padding-top: 18px; max-width: 520px; }
+.review-form h4 { font-size: 16px; color: #3a3a3a; margin: 0 0 12px; }
+.review-rating-input { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.review-rating-input > span { font-size: 14px; color: #5a5a5a; }
+.rating-picker { display: flex; }
+.star-btn { background: none; border: none; padding: 0; cursor: pointer; }
+.review-textarea {
+  width: 100%;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #3a3a3a;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s linear;
+}
+.review-textarea:focus { border-color: rgb(var(--brand-primary)); }
+.review-error { color: #c0392b; font-size: 13px; margin: 8px 0 0; }
+.review-success { color: #2e7d32; font-size: 13px; margin: 8px 0 0; }
+.review-submit { margin-top: 12px; }
+.review-login-hint { border-top: 1px solid #f0e6e8; padding-top: 18px; color: #7a7a7a; font-size: 14px; }
+.review-login-hint a { color: rgb(var(--brand-primary)); }

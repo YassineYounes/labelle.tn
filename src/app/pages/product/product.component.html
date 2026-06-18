@@ -71,13 +71,11 @@
       <div class="comments-note">
         <a (click)="setTab('comments')">
           <div class="star-content">
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
-            <div class="star"></div>
+            @for (filled of averageStars(); track $index) {
+              <div class="star" [class.filled]="filled"></div>
+            }
           </div>
-          <span>0 avis(s)</span>
+          <span>{{ reviewCount() }} avis</span>
         </a>
       </div>
 
@@ -202,7 +200,7 @@
     <ul class="nav-tabs">
       <li><a [class.active]="activeTab() === 'description'" (click)="setTab('description')">Description</a></li>
       <li><a [class.active]="activeTab() === 'details'" (click)="setTab('details')">Détails du produit</a></li>
-      <li><a [class.active]="activeTab() === 'comments'" (click)="setTab('comments')">Commentaires (0)</a></li>
+      <li><a [class.active]="activeTab() === 'comments'" (click)="setTab('comments')">Commentaires ({{ reviewCount() }})</a></li>
     </ul>
     <div class="tab-content">
       @switch (activeTab()) {
@@ -226,8 +224,73 @@
           </div>
         }
         @case ('comments') {
-          <div class="tab-pane">
-            <span class="no-reviews">Ce produit n'a pas d'avis !</span>
+          <div class="tab-pane reviews-pane">
+            @if (reviewCount() > 0) {
+              <div class="reviews-summary">
+                <div class="reviews-average">
+                  <span class="reviews-average-num">{{ averageRating() }}</span>
+                  <div class="star-content">
+                    @for (filled of averageStars(); track $index) {
+                      <div class="star" [class.filled]="filled"></div>
+                    }
+                  </div>
+                  <span class="reviews-count">{{ reviewCount() }} avis</span>
+                </div>
+              </div>
+              <ul class="reviews-list">
+                @for (review of reviewData().reviews; track review.id) {
+                  <li class="review-item">
+                    <div class="review-head">
+                      <span class="review-author">{{ review.author }}</span>
+                      @if (review.verified) {
+                        <span class="review-verified">✓ Achat vérifié</span>
+                      }
+                      <span class="review-date">{{ review.createdAt | date: 'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="star-content review-stars">
+                      @for (s of [1,2,3,4,5]; track s) {
+                        <div class="star" [class.filled]="s <= review.rating"></div>
+                      }
+                    </div>
+                    @if (review.comment) {
+                      <p class="review-comment">{{ review.comment }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <span class="no-reviews">Ce produit n'a pas encore d'avis. Soyez le premier !</span>
+            }
+
+            @if (account.isLoggedIn()) {
+              <form class="review-form" (submit)="$event.preventDefault(); submitReview()">
+                <h4>{{ myReview() ? 'Modifier votre avis' : 'Laisser un avis' }}</h4>
+                <div class="review-rating-input">
+                  <span>Votre note :</span>
+                  <div class="star-content rating-picker">
+                    @for (s of [1,2,3,4,5]; track s) {
+                      <button type="button" class="star star-btn" [class.filled]="s <= formRating()"
+                        (click)="setRating(s)" [attr.aria-label]="s + ' étoiles'"></button>
+                    }
+                  </div>
+                </div>
+                <textarea class="review-textarea" rows="3" placeholder="Votre commentaire (facultatif)"
+                  [(ngModel)]="formComment" name="reviewComment"></textarea>
+                @if (reviewError()) {
+                  <p class="review-error">{{ reviewError() }}</p>
+                }
+                @if (reviewSaved()) {
+                  <p class="review-success">Merci, votre avis a été enregistré.</p>
+                }
+                <button class="btn-primary review-submit" type="submit" [disabled]="submittingReview()">
+                  {{ submittingReview() ? 'Envoi…' : (myReview() ? 'Mettre à jour' : 'Publier mon avis') }}
+                </button>
+              </form>
+            } @else {
+              <p class="review-login-hint">
+                <a routerLink="/mon-compte">Connectez-vous</a> pour laisser un avis.
+              </p>
+            }
           </div>
         }
       }
