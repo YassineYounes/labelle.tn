@@ -1,0 +1,64 @@
+@if (open() && line(); as l) {
+  <div class="cam-backdrop" (click)="close()"></div>
+
+  <div class="cam-dialog" role="dialog" aria-modal="true" aria-labelledby="cam-title">
+    <button type="button" class="cam-close" (click)="close()" aria-label="Fermer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div class="cam-head">
+      <span class="cam-check">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </span>
+      <h2 class="cam-title" id="cam-title">Produit ajouté avec succès à votre panier</h2>
+    </div>
+
+    <div class="cam-body">
+      <div class="cam-product">
+        <a [routerLink]="l.product.link" class="cam-thumb" (click)="close()">
+          <img [src]="l.product.image" [alt]="l.product.name" width="120" height="120" />
+        </a>
+        <p class="cam-product-price">Prix&nbsp;: <strong>{{ l.product.price }}</strong></p>
+        <a class="cam-product-name" [routerLink]="l.product.link" (click)="close()">{{ l.product.name }}</a>
+        <p class="cam-product-qty">Quantité&nbsp;: <strong>{{ l.quantity }}</strong></p>
+      </div>
+
+      <div class="cam-summary">
+        <p class="cam-summary-count">
+          Il y a <strong>{{ cart.count() }}</strong> article{{ cart.count() > 1 ? 's' : '' }} dans votre panier.
+        </p>
+
+        <div class="cam-summary-rows">
+          <div class="cam-summary-row">
+            <span>Total produits</span>
+            <span>{{ formatPrice(cart.subtotal()) }}</span>
+          </div>
+          <div class="cam-summary-row">
+            <span>Frais de port</span>
+            <span>{{ cart.deliveryFee() === 0 ? 'Gratuit' : formatPrice(cart.deliveryFee()) }}</span>
+          </div>
+          <div class="cam-summary-row cam-summary-total">
+            <span>Total</span>
+            <span>{{ formatPrice(cart.total()) }}</span>
+          </div>
+        </div>
+
+        <div class="cam-actions">
+          <button type="button" class="cam-btn cam-btn-continue" (click)="close()">Continuer mes achats</button>
+          <a class="cam-btn cam-btn-checkout" routerLink="/commande" (click)="close()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Commander
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}

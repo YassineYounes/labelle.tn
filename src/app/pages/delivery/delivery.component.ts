@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-delivery',
@@ -8,6 +9,8 @@ import { RouterLink } from '@angular/router';
   styleUrl: './delivery.component.css',
 })
 export class DeliveryComponent {
+  config = inject(ConfigService);
+
   regions = [
     "Gouvernorat de l'Ariana",
     'Gouvernorat de Béja',

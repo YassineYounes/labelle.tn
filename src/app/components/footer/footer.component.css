@@ -1,100 +1,9 @@
-/* ---------- Newsletter band ---------- */
-.block-newsletter {
-  margin: 0;
-  padding: 44px 0;
-  background: rgb(var(--brand-primary));
-}
-
-.newsletter-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.newsletter-text .h3 {
-  margin: 0 50px 0 0;
-  font-family: Jost, sans-serif;
-  font-weight: 700;
-  line-height: 130%;
-  color: #fff;
-  font-size: calc(20px + 10 * ((100vw - 320px) / 1560));
-}
-
-.newsletter-text .h4 {
-  font-weight: 400;
-  line-height: 155%;
-  color: hsla(0, 0%, 100%, 0.53);
-  margin-bottom: 0;
-  font-size: 16px;
-}
-
-.newsletter-form {
-  flex: 1;
-  min-width: 260px;
-}
-
-.newsletter-form form {
-  max-width: 648px;
-  width: 100%;
-  margin-left: auto;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.input-wrapper::after {
-  content: '';
-  width: 100%;
-  height: 1px;
-  background-color: #e5e5e5;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-}
-
-.input-wrapper input[type='email'] {
-  padding: 11.5px 11.5px 11.5px 0;
-  border: none;
-  font-size: 16px;
-  font-family: inherit;
-  background-color: transparent;
-  color: #fff;
-  flex: 1;
-  outline: none;
-}
-
-.input-wrapper input[type='email']::placeholder {
-  color: #fff;
-  opacity: 1;
-}
-
-.newsletter-btn {
-  padding: 9.5px 0 9.5px 9.5px;
-  background: transparent;
-  border: none;
-  outline: none;
-  cursor: pointer;
-}
-
-.newsletter-btn svg path {
-  transition: all 0.3s ease;
-}
-
-.newsletter-btn:hover svg path {
-  stroke: #f0eeee;
-}
-
 /* ---------- Footer columns ---------- */
 .footer-container {
   padding: 0 0 15px;
   overflow: hidden;
-  background: #fff;
+  /* Soft rose tint separates the footer from the white page above it. */
+  background: #fdf0f3;
 }
 
 .footer-row {
@@ -117,6 +26,12 @@
 .block-contact-logo {
   margin: 0 0 20px;
   display: inline-block;
+}
+
+/* The logo is a JPG with a white background; blend it so the rose footer shows
+ * through instead of a white box around it. */
+.block-contact-logo .logo {
+  mix-blend-mode: multiply;
 }
 
 .contact-list li {
@@ -189,9 +104,10 @@
 
 /* ---------- Bottom bar ---------- */
 .footer-container-bottom {
-  border-top: 1px solid #b3b3b3;
+  border-top: 1px solid #f2d5dc;
   padding: 15px 0;
-  background: #fff;
+  /* Slightly deeper tint than the footer body for subtle layering. */
+  background: #fbe6eb;
 }
 
 .bottom-inner {

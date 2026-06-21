@@ -1,0 +1,95 @@
+.product-slider-section {
+  margin: 34px 0;
+}
+
+.slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 16px;
+}
+
+.slider-title {
+  margin: 0;
+  font-family: Jost, sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.slider-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-seeall {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.slider-seeall:hover {
+  color: rgb(var(--brand-primary));
+}
+
+.slider-arrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  color: #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.slider-arrow:hover {
+  background: rgb(var(--brand-primary));
+  border-color: rgb(var(--brand-primary));
+  color: #fff;
+}
+
+.slider-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.slider-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Smaller cards than the full grid: 6 across on wide screens. */
+.slider-slide {
+  flex: 0 0 calc((100% - 5 * 20px) / 6);
+  scroll-snap-align: start;
+}
+
+@media (max-width: 1280px) {
+  .slider-slide {
+    flex-basis: calc((100% - 4 * 20px) / 5);
+  }
+}
+@media (max-width: 1024px) {
+  .slider-slide {
+    flex-basis: calc((100% - 3 * 20px) / 4);
+  }
+}
+@media (max-width: 767px) {
+  .slider-slide {
+    flex-basis: calc((100% - 2 * 20px) / 3);
+  }
+}
+@media (max-width: 575px) {
+  .slider-slide {
+    flex-basis: calc((100% - 20px) / 2);
+  }
+}

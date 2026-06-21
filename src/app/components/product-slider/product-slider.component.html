@@ -1,0 +1,30 @@
+@if (products().length > 0) {
+  <section class="product-slider-section">
+    <div class="slider-head">
+      <h2 class="slider-title">{{ title }}</h2>
+      <div class="slider-controls">
+        <a class="slider-seeall" [routerLink]="seeAllLink">Voir tout</a>
+        <button type="button" class="slider-arrow" (click)="scroll(-1)" aria-label="Précédent">
+          <svg width="9" height="14" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 1L1.5 6L6.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+        <button type="button" class="slider-arrow" (click)="scroll(1)" aria-label="Suivant">
+          <svg width="9" height="14" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 1L6.5 6L1.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="slider-track" #track>
+      @for (product of products(); track product.id) {
+        <div class="slider-slide">
+          <app-product-card [product]="product" [showRating]="false" />
+        </div>
+      }
+    </div>
+  </section>
+}

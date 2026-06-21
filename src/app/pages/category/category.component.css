@@ -322,3 +322,105 @@ li.current .page-number {
   gap: 5px;
   margin-left: 10px;
 }
+
+/* ---------- Coffret (bundle) grid ---------- */
+.coffret-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+  margin-bottom: 36px;
+}
+@media (max-width: 991px) {
+  .coffret-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+  .coffret-grid { grid-template-columns: 1fr; }
+}
+
+.coffret-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #f0e9eb;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.coffret-card:hover {
+  border-color: #f0d9df;
+  box-shadow: 0 10px 30px rgba(58, 58, 58, 0.1);
+  transform: translateY(-4px);
+}
+
+.coffret-image {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  background: #f7f5f6;
+  overflow: hidden;
+}
+.coffret-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.coffret-card:hover .coffret-image img {
+  transform: scale(1.05);
+}
+.coffret-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.coffret-body {
+  padding: 16px 16px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.coffret-name {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.coffret-name a {
+  color: #3a3a3a;
+  transition: color 0.2s ease;
+}
+.coffret-name a:hover {
+  color: rgb(var(--brand-primary));
+}
+.coffret-price {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(var(--brand-primary));
+}
+.coffret-add {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: none;
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.coffret-add:hover {
+  background: rgb(var(--brand-hover));
+}

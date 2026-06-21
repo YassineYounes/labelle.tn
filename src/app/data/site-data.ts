@@ -28,6 +28,8 @@ export interface Product {
   cardName: string;
   image: string;
   largeImage: string;
+  /** Full gallery (cover first) for the product page; cards use `image`. */
+  images?: string[];
   link: string;
   price: string;
   inStock: boolean;
@@ -40,6 +42,10 @@ export interface Product {
   slug?: string;
   /** Original price shown struck-through when a promo price is active */
   oldPrice?: string;
+  /** True when this cart line represents a coffret (bundle), not a product. */
+  isBundle?: boolean;
+  /** The coffret id, when isBundle is true (used at checkout). */
+  bundleId?: number;
 }
 
 export const MENU: MenuItem[] = [

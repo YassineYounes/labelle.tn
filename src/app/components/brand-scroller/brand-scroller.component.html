@@ -1,0 +1,36 @@
+@if (brands().length > 0) {
+  <section class="brand-scroller">
+    <h2 class="brand-scroller-title">Nos marques</h2>
+
+    <div class="brand-marquee">
+      <div class="brand-track">
+        <!-- First copy. -->
+        @for (brand of brands(); track brand.id) {
+          <a class="brand-item" [routerLink]="['/marque', brand.slug]">
+            <span class="brand-logo">
+              @if (brand.logo) {
+                <img [src]="brand.logo" [alt]="brand.name" loading="lazy" />
+              } @else {
+                <span class="brand-initials">{{ initials(brand.name) }}</span>
+              }
+            </span>
+            <span class="brand-name">{{ brand.name }}</span>
+          </a>
+        }
+        <!-- Duplicate copy for a seamless infinite loop. -->
+        @for (brand of brands(); track brand.id) {
+          <a class="brand-item" [routerLink]="['/marque', brand.slug]" aria-hidden="true" tabindex="-1">
+            <span class="brand-logo">
+              @if (brand.logo) {
+                <img [src]="brand.logo" [alt]="brand.name" loading="lazy" />
+              } @else {
+                <span class="brand-initials">{{ initials(brand.name) }}</span>
+              }
+            </span>
+            <span class="brand-name">{{ brand.name }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+}

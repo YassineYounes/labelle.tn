@@ -1,0 +1,73 @@
+@if (loaded() && bundle(); as b) {
+  <nav class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumbs">
+        <li><a routerLink="/"><span>Accueil</span></a></li>
+        <li><a routerLink="/coffret"><span>Coffrets</span></a></li>
+        <li><a><span>{{ b.name }}</span></a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <div class="container coffret-page">
+    <div class="coffret-layout">
+      <div class="coffret-gallery">
+        @if (gallery().length > 1) {
+          <div class="coffret-thumbs">
+            @for (img of gallery(); track img) {
+              <button type="button" class="coffret-thumb" [class.active]="img === activeImage()"
+                (mouseenter)="select(img)" (click)="select(img)">
+                <img [src]="img" [alt]="b.name" />
+              </button>
+            }
+          </div>
+        }
+        <div class="coffret-cover">
+          <img [src]="activeImage()" [alt]="b.name" />
+        </div>
+      </div>
+
+      <div class="coffret-info">
+        <h1 class="coffret-title">{{ b.name }}</h1>
+        <p class="coffret-price">{{ b.priceLabel }}</p>
+
+        @if (b.description) {
+          <p class="coffret-desc">{{ b.description }}</p>
+        }
+
+        @if (b.items && b.items.length) {
+          <div class="coffret-contents">
+            <h2>Ce coffret contient</h2>
+            <ul>
+              @for (it of b.items; track it.slug) {
+                <li>
+                  <span class="coffret-content-thumb">
+                    @if (it.image) {
+                      <img [src]="it.image" [alt]="it.name" />
+                    }
+                  </span>
+                  <span class="coffret-content-name">{{ it.name }}</span>
+                  @if (it.quantity > 1) {
+                    <span class="coffret-content-qty">×{{ it.quantity }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (added()) {
+          <p class="coffret-added">✓ Coffret ajouté au panier</p>
+        }
+
+        <button type="button" class="btn-primary coffret-add-btn" (click)="addToCart()">
+          Ajouter au panier
+        </button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="container coffret-loading">
+    <p>Chargement…</p>
+  </div>
+}

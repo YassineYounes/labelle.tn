@@ -61,6 +61,14 @@ export const routes: Routes = [
   { path: 'adresses', redirectTo: 'mon-compte' },
   { path: 'reduction', redirectTo: 'mon-compte' },
   {
+    path: 'marque/:slug',
+    loadComponent: () => import('./pages/brand/brand.component').then((m) => m.BrandComponent),
+  },
+  {
+    path: 'coffret-detail/:slug',
+    loadComponent: () => import('./pages/coffret/coffret.component').then((m) => m.CoffretComponent),
+  },
+  {
     path: 'accueil/:slug',
     loadComponent: () => import('./pages/product/product.component').then((m) => m.ProductComponent),
   },

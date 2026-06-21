@@ -1,6 +1,7 @@
 import { Injectable, PLATFORM_ID, computed, effect, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Product } from '../data/site-data';
+import { ConfigService } from './config.service';
 
 export interface CartLine {
   product: Product;
@@ -8,8 +9,6 @@ export interface CartLine {
 }
 
 const STORAGE_KEY = 'labelle-cart';
-const FREE_DELIVERY_THRESHOLD = 300;
-const DELIVERY_FEE = 8;
 
 export function parsePrice(product: Product): number {
   return parseFloat(product.price.replace(',', '.'));
@@ -28,9 +27,17 @@ export function formatPrice(value: number): string {
 export class CartService {
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
+  private config = inject(ConfigService);
 
   /** productId -> { product snapshot, quantity } */
   private items = signal<Record<number, CartLine>>(this.load());
+
+  /**
+   * The item most recently added (quantity = the amount just added, not the
+   * running total). Emitted as a fresh object on every add so a global
+   * "added to cart" popup can react — even when the same product is re-added.
+   */
+  lastAdded = signal<CartLine | null>(null);
 
   constructor() {
     effect(() => {
@@ -50,10 +57,10 @@ export class CartService {
   );
 
   deliveryFee = computed(() => {
-    if (this.lines().length === 0 || this.subtotal() >= FREE_DELIVERY_THRESHOLD) {
+    if (this.lines().length === 0 || this.subtotal() >= this.config.freeShippingThreshold()) {
       return 0;
     }
-    return DELIVERY_FEE;
+    return this.config.defaultDeliveryFee();
   });
 
   total = computed(() => this.subtotal() + this.deliveryFee());
@@ -66,6 +73,37 @@ export class CartService {
         [product.id]: { product, quantity: (existing?.quantity ?? 0) + quantity },
       };
     });
+    this.lastAdded.set({ product, quantity });
+  }
+
+  /** Quantity of a given product currently in the cart (0 if absent). */
+  quantityOf(productId: number): number {
+    return this.items()[productId]?.quantity ?? 0;
+  }
+
+  /**
+   * Add a coffret to the cart as a single line. Bundles are represented as a
+   * pseudo-product (offset id so it never clashes with a real product id) so the
+   * existing cart UI works unchanged; checkout sends bundleId for these lines.
+   */
+  addBundle(bundle: { id: number; name: string; price: number; priceLabel: string; cover: string; slug: string }): void {
+    const pseudo: Product = {
+      id: 9_000_000 + bundle.id,
+      bundleId: bundle.id,
+      isBundle: true,
+      name: bundle.name,
+      cardName: bundle.name,
+      image: bundle.cover,
+      largeImage: bundle.cover,
+      link: '/coffret',
+      price: bundle.priceLabel,
+      inStock: true,
+      reference: '',
+      stock: 999,
+      shortDescription: [],
+      description: [],
+    };
+    this.add(pseudo, 1);
   }
 
   setQuantity(productId: number, quantity: number): void {

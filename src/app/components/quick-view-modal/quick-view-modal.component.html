@@ -1,0 +1,64 @@
+@if (product(); as p) {
+  <div class="qv-backdrop" (click)="close()"></div>
+
+  <div class="qv-dialog" role="dialog" aria-modal="true" aria-label="Aperçu rapide">
+    <button type="button" class="qv-close" (click)="close()" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <div class="qv-body">
+      <a class="qv-image" [routerLink]="p.link" (click)="close()">
+        <img [src]="p.largeImage || p.image" [alt]="p.name" />
+      </a>
+
+      <div class="qv-info">
+        <a class="qv-name" [routerLink]="p.link" (click)="close()">{{ p.name }}</a>
+
+        <div class="qv-reference">
+          <span>Référence : {{ p.reference }}</span>
+        </div>
+
+        <p class="qv-price">{{ p.price }}</p>
+
+        @if (p.shortDescription.length) {
+          <div class="qv-desc">
+            @for (line of p.shortDescription; track line) {
+              <p>{{ line }}</p>
+            }
+          </div>
+        }
+
+        @if (p.stock === 0) {
+          <p class="qv-availability qv-unavailable">Rupture de stock</p>
+        } @else if (p.stock === 1) {
+          <p class="qv-availability qv-last">Derniers articles en stock</p>
+        } @else {
+          <p class="qv-availability qv-instock">En stock : {{ p.stock }}</p>
+        }
+
+        @if (stockError()) {
+          <p class="qv-stock-error">{{ stockError() }}</p>
+        }
+
+        <div class="qv-actions">
+          <div class="qv-qty">
+            <button type="button" (click)="decrement()" aria-label="Diminuer">−</button>
+            <span>{{ quantity() }}</span>
+            <button type="button" (click)="increment()" aria-label="Augmenter">+</button>
+          </div>
+          <button type="button" class="qv-add" [disabled]="p.stock === 0" (click)="addToCart()">
+            <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 9V5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5V9M2 7H16L17 19H1L2 7Z" stroke="#fff"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Ajouter au panier
+          </button>
+        </div>
+
+        <a class="qv-detail-link" [routerLink]="p.link" (click)="close()">Voir tous les détails →</a>
+      </div>
+    </div>
+  </div>
+}

@@ -58,6 +58,34 @@ export interface SearchResult {
   pages: number;
 }
 
+export interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logo: string | null;
+  productCount: number;
+}
+
+export interface BrandPage {
+  brand: { id: number; name: string; slug: string; logo: string | null };
+  products: Product[];
+  total: number;
+  pages: number;
+}
+
+export interface Bundle {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  priceLabel: string;
+  cover: string;
+  photos: string[];
+  itemCount: number;
+  items?: { name: string; slug: string; image: string | null; quantity: number }[];
+}
+
 const PLACEHOLDER_IMAGE = 'img/products/placeholder.png';
 
 @Injectable({ providedIn: 'root' })
@@ -116,6 +144,62 @@ export class CatalogService {
       .pipe(map((dto) => this.toProduct(dto)));
   }
 
+  // ---- Brands ----
+
+  /** Active brands that have published products (for the home scroller). */
+  brands(): Observable<Brand[]> {
+    return this.http
+      .get<Brand[]>(`${this.api}/api/shop/brands`)
+      .pipe(map((brands) => brands.map((b) => ({ ...b, logo: b.logo ? this.asset(b.logo) : null }))));
+  }
+
+  brand(slug: string, page = 1, sort = 'newest'): Observable<BrandPage> {
+    return this.http
+      .get<Omit<BrandPage, 'products'> & { products: CardDto[] }>(
+        `${this.api}/api/shop/brand/${slug}`,
+        { params: { page, sort } },
+      )
+      .pipe(
+        map((res) => ({
+          ...res,
+          brand: { ...res.brand, logo: res.brand.logo ? this.asset(res.brand.logo) : null },
+          products: res.products.map((c) => this.toProduct(c)),
+        })),
+      );
+  }
+
+  // ---- Coffrets (bundles) ----
+
+  bundles(): Observable<Bundle[]> {
+    return this.http
+      .get<any[]>(`${this.api}/api/shop/bundles`)
+      .pipe(map((rows) => rows.map((b) => this.toBundle(b))));
+  }
+
+  bundle(slug: string): Observable<Bundle> {
+    return this.http.get<any>(`${this.api}/api/shop/bundle/${slug}`).pipe(map((b) => this.toBundle(b)));
+  }
+
+  private toBundle(b: any): Bundle {
+    return {
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      description: b.description ?? null,
+      price: b.price,
+      priceLabel: this.formatPrice(b.price),
+      cover: this.asset(b.cover),
+      photos: (b.photos ?? []).map((p: string) => this.asset(p)),
+      itemCount: b.itemCount ?? 0,
+      items: (b.items ?? []).map((i: any) => ({
+        name: i.name,
+        slug: i.slug,
+        image: i.image ? this.asset(i.image) : null,
+        quantity: i.quantity,
+      })),
+    };
+  }
+
   // ---- Persistent wishlist (authenticated; token added by the interceptor) ----
 
   wishlist(): Observable<Product[]> {
@@ -153,7 +237,12 @@ export class CatalogService {
   private toProduct(dto: CardDto | ProductDto): Product {
     const detail = dto as Partial<ProductDto>;
     const effectivePrice = dto.promoPrice ?? dto.price;
-    const cover = detail.images?.find((i) => i.isCover) ?? detail.images?.[0];
+    // Gallery ordered with the cover first, then the rest by their API order.
+    const gallery = [...(detail.images ?? [])].sort(
+      (a, b) => Number(b.isCover) - Number(a.isCover),
+    );
+    const cover = gallery[0];
+    const images = gallery.map((i) => this.asset(i.path));
 
     return {
       id: dto.id,
@@ -162,6 +251,7 @@ export class CatalogService {
       cardName: dto.cardName,
       image: this.asset(dto.image),
       largeImage: this.asset(cover?.path ?? dto.image),
+      images: images.length ? images : [this.asset(cover?.path ?? dto.image)],
       link: `/accueil/${dto.slug}`,
       price: this.formatPrice(effectivePrice),
       oldPrice: dto.promoPrice != null ? this.formatPrice(dto.price) : undefined,

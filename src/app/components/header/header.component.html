@@ -77,14 +77,6 @@
             </div>
           </div>
 
-          <a class="icon-btn" href="#" aria-label="Comparer">
-            <svg width="27" height="25" viewBox="0 0 27 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M13.5 0.875V23.1562M13.5 23.1562C11.7213 23.1562 10.0176 23.4985 8.44313 24.125M13.5 23.1562C15.2787 23.1562 16.9824 23.4985 18.5569 24.125M21.6563 3.41958C18.9541 3.01414 16.2287 2.81128 13.5 2.8125C10.7317 2.8125 8.00813 3.01917 5.34375 3.41958M21.6563 3.41958C22.8767 3.60429 24.085 3.82904 25.2813 4.09125M21.6563 3.41958L24.8221 17.274C24.9695 17.9185 24.694 18.6018 24.1104 18.8266C23.3231 19.1286 22.4927 19.2825 21.6563 19.2812C20.8198 19.2825 19.9894 19.1286 19.2021 18.8266C18.6185 18.6018 18.343 17.9185 18.4892 17.274L21.6563 3.42088V3.41958ZM5.34375 3.41958C4.12333 3.60429 2.915 3.82904 1.71875 4.09125M5.34375 3.41958L8.50958 17.274C8.657 17.9185 8.3815 18.6018 7.79788 18.8266C7.01056 19.1286 6.18023 19.2824 5.34375 19.2812C4.50727 19.2824 3.67694 19.1286 2.88963 18.8266C2.306 18.6018 2.0305 17.9185 2.17671 17.274L5.34375 3.42088V3.41958Z"
-                stroke="#3A3A3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </a>
-
           <a class="icon-btn wishlist-btn" routerLink="/liste-souhaits" aria-label="Liste de souhaits">
             <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
@@ -129,15 +121,59 @@
         </div>
       </div>
 
-      @if (searchOpen) {
-        <div class="search-bar">
-          <form (submit)="$event.preventDefault(); submitSearch()">
-            <input type="text" name="s" placeholder="Search" autocomplete="off" [(ngModel)]="searchQuery" />
-          </form>
-        </div>
-      }
     </div>
   </div>
+
+  @if (searchOpen) {
+    <div class="search-overlay">
+      <div class="search-overlay-backdrop" (click)="closeSearch()"></div>
+
+      <div class="search-popup" role="dialog" aria-modal="true" aria-label="Recherche">
+        <form class="search-popup-form" (submit)="$event.preventDefault(); submitSearch()">
+          <svg class="search-popup-icon" width="22" height="22" viewBox="0 0 35 35" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M28 28L21.9371 21.9371M21.9371 21.9371C23.578 20.2962 24.4999 18.0706 24.4999 15.7499C24.4999 13.4293 23.578 11.2037 21.9371 9.5628C20.2962 7.92187 18.0706 7 15.7499 7C13.4293 7 11.2037 7.92187 9.5628 9.5628C7.92187 11.2037 7 13.4293 7 15.7499C7 18.0706 7.92187 20.2962 9.5628 21.9371C11.2037 23.578 13.4293 24.4999 15.7499 24.4999C18.0706 24.4999 20.2962 23.578 21.9371 21.9371Z"
+              stroke-width="2" stroke="#b2b2b2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <input #searchInput type="text" name="s" placeholder="Rechercher un produit…" autocomplete="off"
+            [ngModel]="searchQuery" (ngModelChange)="onQueryChange($event)" />
+          <button type="button" class="search-popup-close" (click)="closeSearch()" aria-label="Fermer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </form>
+
+        @if (searchQuery.trim().length >= 2) {
+          <div class="search-results">
+            @if (suggestLoading) {
+              <div class="search-loading">Recherche…</div>
+            } @else if (suggestions.length === 0) {
+              <div class="search-empty">Aucun produit trouvé pour « {{ searchQuery.trim() }} »</div>
+            } @else {
+              <ul class="search-suggestions">
+                @for (p of suggestions; track p.id) {
+                  <li>
+                    <a class="suggestion" [routerLink]="p.link" (click)="closeSearch()">
+                      <span class="suggestion-thumb">
+                        <img [src]="p.image" [alt]="p.name" width="48" height="48" />
+                      </span>
+                      <span class="suggestion-name">{{ p.name }}</span>
+                      <span class="suggestion-price">{{ p.price }}</span>
+                    </a>
+                  </li>
+                }
+              </ul>
+              <button type="button" class="search-all" (click)="submitSearch()">
+                Voir tous les résultats pour « {{ searchQuery.trim() }} »
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
 
   @if (mobileMenuOpen) {
     <nav class="mobile-menu">

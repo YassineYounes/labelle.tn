@@ -51,7 +51,6 @@
   } @else {
     <header class="page-hero">
       <h1 class="hero-title">Commande</h1>
-      <p class="hero-script">Paiement à la livraison</p>
     </header>
 
     <div class="checkout-layout">
@@ -60,17 +59,20 @@
         <div class="form-row">
           <div class="form-field">
             <label for="firstName">Prénom</label>
-            <input id="firstName" name="firstName" type="text" required [(ngModel)]="firstName" />
+            <input id="firstName" name="firstName" type="text" required [(ngModel)]="firstName"
+              [class.invalid]="showErrors() && !firstName.trim()" />
           </div>
           <div class="form-field">
             <label for="lastName">Nom</label>
-            <input id="lastName" name="lastName" type="text" required [(ngModel)]="lastName" />
+            <input id="lastName" name="lastName" type="text" required [(ngModel)]="lastName"
+              [class.invalid]="showErrors() && !lastName.trim()" />
           </div>
         </div>
         <div class="form-row">
           <div class="form-field">
             <label for="phone">Téléphone</label>
-            <input id="phone" name="phone" type="tel" required [(ngModel)]="phone" />
+            <input id="phone" name="phone" type="tel" required [(ngModel)]="phone"
+              [class.invalid]="showErrors() && !phone.trim()" />
           </div>
           <div class="form-field">
             <label for="email">E-mail (facultatif)</label>
@@ -79,7 +81,8 @@
         </div>
         <div class="form-field">
           <label for="address">Adresse</label>
-          <input id="address" name="address" type="text" required [(ngModel)]="address" />
+          <input id="address" name="address" type="text" required [(ngModel)]="address"
+            [class.invalid]="showErrors() && !address.trim()" />
         </div>
         <div class="form-row">
           <div class="form-field">
@@ -90,6 +93,7 @@
               required
               [ngModel]="zoneId()"
               (ngModelChange)="zoneId.set($event)"
+              [class.invalid]="showErrors() && !zoneId()"
             >
               <option [ngValue]="null" disabled>Choisir…</option>
               @for (zone of zones(); track zone.id) {
@@ -98,14 +102,32 @@
             </select>
           </div>
           <div class="form-field">
-            <label for="city">Ville (facultatif)</label>
-            <input id="city" name="city" type="text" [(ngModel)]="city" />
+            <label for="city">Ville</label>
+            <input id="city" name="city" type="text" required [(ngModel)]="city"
+              [class.invalid]="showErrors() && !city.trim()" />
           </div>
         </div>
         <div class="form-field">
           <label for="note">Note (facultatif)</label>
           <input id="note" name="note" type="text" [(ngModel)]="note" />
         </div>
+
+        <h2 class="payment-heading">Mode de paiement</h2>
+        <label class="payment-option">
+          <input type="radio" name="payment" value="cod" [(ngModel)]="paymentMethod" />
+          <span>Payer comptant à la livraison</span>
+        </label>
+
+        <label class="terms-check" [class.invalid]="showErrors() && !acceptTerms">
+          <input type="checkbox" name="terms" [(ngModel)]="acceptTerms" />
+          <span>
+            J'ai lu les
+            <a routerLink="/content/3-termes-et-conditions-d-utilisation" target="_blank">conditions générales de
+              vente</a>
+            et j'y adhère sans réserve.
+          </span>
+        </label>
+
         @if (error()) {
           <p class="checkout-error">{{ error() }}</p>
         }

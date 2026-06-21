@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartService, formatPrice, parsePrice } from '../../services/cart.service';
 import { CartLine } from '../../services/cart.service';
+import { ConfigService } from '../../services/config.service';
 
 @Component({
   selector: 'app-cart',
@@ -11,6 +12,7 @@ import { CartLine } from '../../services/cart.service';
 })
 export class CartComponent {
   cart = inject(CartService);
+  config = inject(ConfigService);
   formatPrice = formatPrice;
 
   lineTotal(line: CartLine): string {

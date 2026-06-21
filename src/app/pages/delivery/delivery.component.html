@@ -38,8 +38,8 @@
           <path d="M5 9.5V9.51M19 15.5V15.51" stroke="#db96a1" stroke-width="2.2" stroke-linecap="round" />
         </svg>
       </span>
-      <p class="highlight-value">Gratuite dès 300 DT</p>
-      <p class="highlight-label">8 DT TTC pour toute commande inférieure à 300 DT</p>
+      <p class="highlight-value">Gratuite dès {{ config.freeShippingThreshold() }} DT</p>
+      <p class="highlight-label">{{ config.defaultDeliveryFee() }} DT TTC pour toute commande inférieure à {{ config.freeShippingThreshold() }} DT</p>
     </li>
     <li>
       <span class="highlight-icon">
@@ -83,8 +83,8 @@
 
   <section class="delivery-section">
     <h2 class="section-title"><span class="section-letter">d</span>Frais de livraison</h2>
-    <p>Pour toute commande d'un montant dépassant 300 DT, la livraison est gratuite.</p>
-    <p>Pour toute commande d'un montant inférieur à 300 DT, nous facturons des frais de livraison de 8 DT TTC.</p>
+    <p>Pour toute commande d'un montant dépassant {{ config.freeShippingThreshold() }} DT, la livraison est gratuite.</p>
+    <p>Pour toute commande d'un montant inférieur à {{ config.freeShippingThreshold() }} DT, nous facturons des frais de livraison de {{ config.defaultDeliveryFee() }} DT TTC.</p>
   </section>
 
   <section class="delivery-section">

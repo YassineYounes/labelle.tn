@@ -10,7 +10,10 @@ export interface DeliveryZone {
 }
 
 export interface CheckoutItem {
-  id: number;
+  /** Product id for a normal line. */
+  id?: number;
+  /** Coffret id for a bundle line (one of id / bundleId is set). */
+  bundleId?: number;
   quantity: number;
 }
 

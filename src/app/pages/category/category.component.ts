@@ -3,8 +3,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 import { Product } from '../../data/site-data';
-import { CategoryPage, CatalogService } from '../../services/catalog.service';
+import { Bundle, CategoryPage, CatalogService } from '../../services/catalog.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { CartService } from '../../services/cart.service';
 
 const PAGE_SIZE = 12;
 
@@ -51,6 +52,7 @@ export class CategoryComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private catalog = inject(CatalogService);
+  private cart = inject(CartService);
 
   sortOptions = SORT_OPTIONS;
   sortOpen = signal(false);
@@ -109,6 +111,23 @@ export class CategoryComponent {
       link: `/${b.slug}`,
     })),
   );
+
+  /** This category is the coffret landing page. */
+  isCoffret = computed(() => this.catSlug() === 'coffret');
+
+  /** Coffrets to show on the coffret category page. */
+  bundles = toSignal(
+    toObservable(this.catSlug).pipe(
+      switchMap((slug) =>
+        slug === 'coffret' ? this.catalog.bundles().pipe(catchError(() => of([] as Bundle[]))) : of([] as Bundle[]),
+      ),
+    ),
+    { initialValue: [] as Bundle[] },
+  );
+
+  addBundle(bundle: Bundle): void {
+    this.cart.addBundle(bundle);
+  }
 
   pageProducts = computed<Product[]>(() => this.data()?.products ?? []);
   totalProducts = computed(() => this.data()?.total ?? 0);

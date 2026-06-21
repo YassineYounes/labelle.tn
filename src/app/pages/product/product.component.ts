@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, computed, effect, inject, signal, untracked } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { WishlistService } from '../../services/wishlist.service';
 import { CatalogService } from '../../services/catalog.service';
 import { AccountService } from '../../services/account.service';
 import { Review, ReviewService, ReviewSummary } from '../../services/review.service';
+import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
 type Tab = 'description' | 'details' | 'comments';
 
@@ -37,7 +38,7 @@ const EMPTY_PRODUCT: Product = {
 
 @Component({
   selector: 'app-product',
-  imports: [RouterLink, FormsModule, DatePipe],
+  imports: [RouterLink, FormsModule, DatePipe, ProductCardComponent],
   templateUrl: './product.component.html',
   styleUrl: './product.component.css',
 })
@@ -70,11 +71,21 @@ export class ProductComponent {
   product = computed<Product>(() => this.data() ?? EMPTY_PRODUCT);
 
   /** "Next product" / related, pulled from featured (we no longer hold the full list). */
-  private related = toSignal(this.catalog.featured(8), { initialValue: [] as Product[] });
+  private related = toSignal(this.catalog.featured(12), { initialValue: [] as Product[] });
   nextProduct = computed<Product>(() => {
     const others = this.related().filter((p) => p.id !== this.product().id);
     return others[0] ?? this.product();
   });
+  prevProduct = computed<Product>(() => {
+    const others = this.related().filter((p) => p.id !== this.product().id);
+    // Pick a different neighbour from "next" so the two arrows don't collide.
+    return others[others.length - 1] ?? this.product();
+  });
+
+  /** Suggested products for the slider (related minus the current product). */
+  suggestions = computed<Product[]>(() =>
+    this.related().filter((p) => p.id !== this.product().id),
+  );
 
   cart = inject(CartService);
   wishlist = inject(WishlistService);
@@ -83,7 +94,58 @@ export class ProductComponent {
 
   quantity = signal(1);
   activeTab = signal<Tab>('description');
-  addedToCart = signal(false);
+  stockError = signal<string | null>(null);
+
+  /** The gallery image shown in the main cover; defaults to the cover. */
+  gallery = computed<string[]>(() => this.product().images ?? [this.product().largeImage]);
+  selectedImage = signal<string | null>(null);
+  /** Cover currently displayed — the user's pick, or the gallery's first. */
+  activeImage = computed<string>(() => this.selectedImage() ?? this.gallery()[0]);
+
+  selectImage(src: string): void {
+    this.selectedImage.set(src);
+  }
+
+  // ----- Image lightbox -----
+  lightboxOpen = signal(false);
+  lightboxIndex = signal(0);
+
+  openLightbox(): void {
+    const idx = this.gallery().indexOf(this.activeImage());
+    this.lightboxIndex.set(idx >= 0 ? idx : 0);
+    this.lightboxOpen.set(true);
+  }
+
+  closeLightbox(): void {
+    this.lightboxOpen.set(false);
+  }
+
+  lightboxNext(): void {
+    const len = this.gallery().length;
+    this.lightboxIndex.update((i) => (i + 1) % len);
+  }
+
+  lightboxPrev(): void {
+    const len = this.gallery().length;
+    this.lightboxIndex.update((i) => (i - 1 + len) % len);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onLightboxKey(e: KeyboardEvent): void {
+    if (!this.lightboxOpen()) {
+      return;
+    }
+    if (e.key === 'Escape') {
+      this.closeLightbox();
+    } else if (e.key === 'ArrowRight') {
+      this.lightboxNext();
+    } else if (e.key === 'ArrowLeft') {
+      this.lightboxPrev();
+    }
+  }
+
+  @ViewChild('reviewsSection') private reviewsSection?: ElementRef<HTMLElement>;
+  @ViewChild('suggestTrack') private suggestTrack?: ElementRef<HTMLElement>;
 
   // ----- Reviews -----
   reviewData = signal<ReviewSummary>(EMPTY_SUMMARY);
@@ -103,9 +165,13 @@ export class ProductComponent {
   });
 
   constructor() {
-    // (Re)load reviews whenever the product changes.
+    // (Re)load reviews and reset the gallery selection whenever the product changes.
     effect(() => {
       const id = this.product().id;
+      untracked(() => {
+        this.selectedImage.set(null);
+        this.lightboxOpen.set(false);
+      });
       if (id > 0) {
         this.loadReviews(id);
       }
@@ -166,12 +232,28 @@ export class ProductComponent {
   }
 
   addToCart(): void {
-    if (this.product().stock === 0) {
+    const p = this.product();
+    if (p.stock === 0) {
       return;
     }
-    this.cart.add(this.product(), this.quantity());
-    this.addedToCart.set(true);
-    setTimeout(() => this.addedToCart.set(false), 2500);
+    const inCart = this.cart.quantityOf(p.id);
+    const requested = this.quantity();
+
+    // Validate against available stock up front, so the shopper finds out here
+    // instead of at the last checkout step.
+    if (inCart + requested > p.stock) {
+      const remaining = Math.max(0, p.stock - inCart);
+      this.stockError.set(
+        remaining === 0
+          ? `Vous avez déjà la totalité du stock disponible (${p.stock}) dans votre panier.`
+          : `Stock insuffisant : il ne reste que ${p.stock} en stock` +
+              (inCart > 0 ? `, dont ${inCart} déjà dans votre panier.` : '.'),
+      );
+      return;
+    }
+
+    this.stockError.set(null);
+    this.cart.add(p, requested);
   }
 
   toggleWishlist(): void {
@@ -185,11 +267,31 @@ export class ProductComponent {
     this.activeTab.set(tab);
   }
 
+  /** Slide the suggestions track left (-1) or right (1). */
+  scrollSuggest(dir: -1 | 1): void {
+    const el = this.suggestTrack?.nativeElement;
+    if (el) {
+      el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' });
+    }
+  }
+
+  /** Open the comments tab and smooth-scroll to the reviews / question area. */
+  goToReviews(): void {
+    this.activeTab.set('comments');
+    // Wait for the comments pane to render before scrolling to it.
+    setTimeout(() => {
+      this.reviewsSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
   increment(): void {
-    this.quantity.update((q) => q + 1);
+    // Don't let the stepper climb past what's in stock.
+    this.quantity.update((q) => Math.min(this.product().stock || 1, q + 1));
+    this.stockError.set(null);
   }
 
   decrement(): void {
     this.quantity.update((q) => Math.max(1, q - 1));
+    this.stockError.set(null);
   }
 }

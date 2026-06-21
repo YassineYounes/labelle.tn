@@ -1,0 +1,43 @@
+@if (loaded() && brand(); as b) {
+  <nav class="breadcrumb-bar">
+    <div class="container">
+      <ol class="breadcrumbs">
+        <li><a routerLink="/"><span>Accueil</span></a></li>
+        <li><a><span>{{ b.name }}</span></a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <div class="container info-page">
+    <header class="page-hero brand-hero">
+      <span class="brand-hero-logo">
+        @if (b.logo) {
+          <img [src]="b.logo" [alt]="b.name" />
+        } @else {
+          <span class="brand-hero-initials">{{ initials(b.name) }}</span>
+        }
+      </span>
+      <h1 class="hero-title">{{ b.name }}</h1>
+      @if (total() > 0) {
+        <p class="hero-intro">Il y a {{ total() }} produit{{ total() > 1 ? 's' : '' }}.</p>
+      }
+    </header>
+
+    @if (products().length > 0) {
+      <div class="results-grid">
+        @for (product of products(); track product.id) {
+          <app-product-card [product]="product" />
+        }
+      </div>
+    } @else {
+      <div class="listing-empty">
+        <p>Aucun produit pour cette marque pour le moment.</p>
+        <a class="btn-primary" routerLink="/">Retour à l'accueil</a>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="container product-loading">
+    <p>Chargement…</p>
+  </div>
+}

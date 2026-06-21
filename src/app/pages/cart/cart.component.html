@@ -67,7 +67,7 @@
           <span>{{ cart.deliveryFee() === 0 ? 'Gratuite' : formatPrice(cart.deliveryFee()) }}</span>
         </div>
         @if (cart.deliveryFee() > 0) {
-          <p class="summary-note">Livraison gratuite à partir de 300 DT d'achat</p>
+          <p class="summary-note">Livraison gratuite à partir de {{ config.freeShippingThreshold() }} DT d'achat</p>
         }
         <div class="summary-row summary-total">
           <span>Total</span>

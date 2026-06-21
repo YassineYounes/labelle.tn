@@ -6,6 +6,7 @@ import { catchError, of } from 'rxjs';
 import { CartLine, CartService, formatPrice } from '../../services/cart.service';
 import { CheckoutService, DeliveryZone, OrderConfirmation, QuoteResult } from '../../services/checkout.service';
 import { AccountService } from '../../services/account.service';
+import { ConfigService } from '../../services/config.service';
 
 interface OrderRecap {
   reference: string;
@@ -25,6 +26,7 @@ interface OrderRecap {
 })
 export class CheckoutComponent {
   cart = inject(CartService);
+  config = inject(ConfigService);
   private checkout = inject(CheckoutService);
   private account = inject(AccountService);
   formatPrice = formatPrice;
@@ -41,6 +43,8 @@ export class CheckoutComponent {
   city = '';
   zoneId = signal<number | null>(null);
   note = '';
+  paymentMethod = 'cod';
+  acceptTerms = false;
 
   couponCode = '';
   applyingCoupon = signal(false);
@@ -50,6 +54,8 @@ export class CheckoutComponent {
 
   submitting = signal(false);
   error = signal<string | null>(null);
+  /** Set once the user submits, to highlight the missing required fields. */
+  showErrors = signal(false);
   order = signal<OrderRecap | null>(null);
 
   constructor() {
@@ -74,7 +80,7 @@ export class CheckoutComponent {
     if (!zone) {
       return null;
     }
-    return this.cart.subtotal() >= 300 ? 0 : zone.fee;
+    return this.cart.subtotal() >= this.config.freeShippingThreshold() ? 0 : zone.fee;
   });
 
   total = computed(() =>
@@ -82,6 +88,15 @@ export class CheckoutComponent {
   );
 
   selectedZoneName = computed(() => this.zones().find((z) => z.id === this.zoneId())?.name ?? '');
+
+  /** Cart lines as the checkout payload: coffrets send bundleId, products send id. */
+  private cartItems(): { id?: number; bundleId?: number; quantity: number }[] {
+    return this.cart.lines().map((line) =>
+      line.product.isBundle
+        ? { bundleId: line.product.bundleId, quantity: line.quantity }
+        : { id: line.product.id, quantity: line.quantity },
+    );
+  }
 
   /** Validate the typed promo code server-side and apply (or report) it. */
   applyCoupon(): void {
@@ -95,7 +110,7 @@ export class CheckoutComponent {
     this.applyingCoupon.set(true);
     this.checkout
       .quote({
-        items: this.cart.lines().map((line) => ({ id: line.product.id, quantity: line.quantity })),
+        items: this.cartItems(),
         zoneId: this.zoneId(),
         couponCode: code,
       })
@@ -133,15 +148,24 @@ export class CheckoutComponent {
 
   submit(): void {
     this.error.set(null);
+    this.showErrors.set(false);
     const zoneId = this.zoneId();
     if (
       !this.firstName.trim() ||
       !this.lastName.trim() ||
       !this.phone.trim() ||
       !this.address.trim() ||
+      !this.city.trim() ||
       !zoneId
     ) {
       this.error.set('Veuillez remplir tous les champs obligatoires.');
+      this.showErrors.set(true);
+      return;
+    }
+
+    if (!this.acceptTerms) {
+      this.error.set('Veuillez accepter les conditions générales de vente pour continuer.');
+      this.showErrors.set(true);
       return;
     }
 
@@ -157,10 +181,10 @@ export class CheckoutComponent {
         },
         shipping: {
           zoneId,
-          city: this.city.trim() || undefined,
+          city: this.city.trim(),
           address: this.address.trim(),
         },
-        items: lines.map((line) => ({ id: line.product.id, quantity: line.quantity })),
+        items: this.cartItems(),
         comment: this.note.trim() || undefined,
         couponCode: this.appliedCode() ?? undefined,
       })

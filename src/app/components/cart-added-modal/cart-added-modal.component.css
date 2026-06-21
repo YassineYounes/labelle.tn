@@ -1,0 +1,227 @@
+.cam-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(58, 58, 58, 0.45);
+  z-index: 1300;
+  animation: cam-fade 0.18s ease;
+}
+
+.cam-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 32px);
+  max-width: 600px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 24px 70px rgba(58, 58, 58, 0.3);
+  padding: 0;
+  z-index: 1301;
+  color: var(--text-dark);
+  animation: cam-pop 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.15);
+}
+
+.cam-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #b2b2b2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.cam-close:hover {
+  background: #f4f4f4;
+  color: var(--text-dark);
+}
+
+/* Header with success check */
+.cam-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 46px 16px 22px;
+  border-bottom: 1px solid #eee;
+}
+.cam-check {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  background: #4cbb6c;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cam-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.3;
+}
+
+/* Two-column body */
+.cam-body {
+  display: flex;
+  align-items: stretch;
+  padding: 22px;
+  gap: 22px;
+}
+
+/* Left: product */
+.cam-product {
+  width: 44%;
+  flex-shrink: 0;
+  text-align: center;
+  padding-right: 22px;
+  border-right: 1px solid #eee;
+}
+.cam-thumb {
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.cam-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cam-product-price {
+  margin: 14px 0 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.cam-product-price strong {
+  color: var(--text-dark);
+}
+.cam-product-name {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-dark);
+  line-height: 1.35;
+  transition: color 0.15s;
+}
+.cam-product-name:hover {
+  color: rgb(var(--brand-primary));
+}
+.cam-product-qty {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.cam-product-qty strong {
+  color: var(--text-dark);
+}
+
+/* Right: cart summary */
+.cam-summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cam-summary-count {
+  margin: 2px 0 16px;
+  font-size: 0.92rem;
+  color: var(--text-dark);
+}
+.cam-summary-rows {
+  margin-bottom: 20px;
+}
+.cam-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  color: var(--text-dark);
+  padding: 6px 0;
+}
+.cam-summary-total {
+  border-top: 1px solid #eee;
+  margin-top: 4px;
+  padding-top: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.cam-summary-total span:last-child {
+  color: rgb(var(--brand-primary));
+}
+
+/* Actions */
+.cam-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cam-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 16px;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+.cam-btn-continue {
+  border: 2px solid rgb(var(--brand-primary));
+  background: #fff;
+  color: rgb(var(--brand-primary));
+}
+.cam-btn-continue:hover {
+  background: rgb(var(--brand-primary));
+  color: #fff;
+}
+.cam-btn-checkout {
+  border: 2px solid rgb(var(--brand-primary));
+  background: rgb(var(--brand-primary));
+  color: #fff;
+}
+.cam-btn-checkout:hover {
+  background: rgb(var(--brand-hover));
+  border-color: rgb(var(--brand-hover));
+}
+
+@keyframes cam-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes cam-pop {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Stack columns on small screens */
+@media (max-width: 540px) {
+  .cam-body {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .cam-product {
+    width: 100%;
+    padding-right: 0;
+    padding-bottom: 18px;
+    border-right: none;
+    border-bottom: 1px solid #eee;
+  }
+}
