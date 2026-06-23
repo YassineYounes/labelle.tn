@@ -41,27 +41,33 @@
             <ul>
               @for (it of b.items; track it.slug) {
                 <li>
-                  <span class="coffret-content-thumb">
-                    @if (it.image) {
-                      <img [src]="it.image" [alt]="it.name" />
+                  <a class="coffret-content-link" [routerLink]="['/accueil', it.slug]">
+                    <span class="coffret-content-thumb">
+                      @if (it.image) {
+                        <img [src]="it.image" [alt]="it.name" />
+                      }
+                    </span>
+                    <span class="coffret-content-name">{{ it.name }}</span>
+                    @if (it.quantity > 1) {
+                      <span class="coffret-content-qty">×{{ it.quantity }}</span>
                     }
-                  </span>
-                  <span class="coffret-content-name">{{ it.name }}</span>
-                  @if (it.quantity > 1) {
-                    <span class="coffret-content-qty">×{{ it.quantity }}</span>
-                  }
+                  </a>
                 </li>
               }
             </ul>
           </div>
         }
 
+        @if (!b.inStock) {
+          <p class="coffret-oos">Rupture de stock</p>
+        }
+
         @if (added()) {
           <p class="coffret-added">✓ Coffret ajouté au panier</p>
         }
 
-        <button type="button" class="btn-primary coffret-add-btn" (click)="addToCart()">
-          Ajouter au panier
+        <button type="button" class="btn-primary coffret-add-btn" (click)="addToCart()" [disabled]="!b.inStock">
+          {{ b.inStock ? 'Ajouter au panier' : 'Indisponible' }}
         </button>
       </div>
     </div>

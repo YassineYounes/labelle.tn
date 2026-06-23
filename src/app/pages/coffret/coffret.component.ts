@@ -58,7 +58,7 @@ export class CoffretComponent {
 
   addToCart(): void {
     const b = this.data();
-    if (!b) {
+    if (!b || !b.inStock) {
       return;
     }
     this.cart.addBundle(b);

@@ -86,7 +86,16 @@ export class CartService {
    * pseudo-product (offset id so it never clashes with a real product id) so the
    * existing cart UI works unchanged; checkout sends bundleId for these lines.
    */
-  addBundle(bundle: { id: number; name: string; price: number; priceLabel: string; cover: string; slug: string }): void {
+  addBundle(bundle: {
+    id: number;
+    name: string;
+    price: number;
+    priceLabel: string;
+    cover: string;
+    slug: string;
+    availableQuantity?: number;
+  }): void {
+    const stock = bundle.availableQuantity ?? 999;
     const pseudo: Product = {
       id: 9_000_000 + bundle.id,
       bundleId: bundle.id,
@@ -97,9 +106,9 @@ export class CartService {
       largeImage: bundle.cover,
       link: '/coffret',
       price: bundle.priceLabel,
-      inStock: true,
+      inStock: stock > 0,
       reference: '',
-      stock: 999,
+      stock,
       shortDescription: [],
       description: [],
     };

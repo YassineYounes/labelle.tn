@@ -424,3 +424,19 @@ li.current .page-number {
 .coffret-add:hover {
   background: rgb(var(--brand-hover));
 }
+
+.coffret-oos-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+.coffret-add:disabled {
+  background: #d8c7cb;
+  cursor: not-allowed;
+}

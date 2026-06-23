@@ -126,6 +126,9 @@ export class CategoryComponent {
   );
 
   addBundle(bundle: Bundle): void {
+    if (!bundle.inStock) {
+      return;
+    }
     this.cart.addBundle(bundle);
   }
 

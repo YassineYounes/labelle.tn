@@ -1,0 +1,191 @@
+.coffret-showcase {
+  margin: 34px 0;
+}
+
+.slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 16px;
+}
+
+.slider-title {
+  margin: 0;
+  font-family: Jost, sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+.slider-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-seeall {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+.slider-seeall:hover {
+  color: rgb(var(--brand-primary));
+}
+
+.slider-arrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #e2e2e2;
+  background: #fff;
+  color: #3a3a3a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.slider-arrow:hover {
+  background: rgb(var(--brand-primary));
+  border-color: rgb(var(--brand-primary));
+  color: #fff;
+}
+
+.coffret-track {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.coffret-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Larger gift-set cards: 4 across on wide screens. */
+.coffret-card {
+  flex: 0 0 calc((100% - 3 * 26px) / 4);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #f0e9eb;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.coffret-card:hover {
+  border-color: #f0d9df;
+  box-shadow: 0 10px 30px rgba(58, 58, 58, 0.1);
+  transform: translateY(-4px);
+}
+
+.coffret-image {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  background: #f7f5f6;
+  overflow: hidden;
+}
+.coffret-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.coffret-card:hover .coffret-image img {
+  transform: scale(1.05);
+}
+.coffret-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.coffret-body {
+  padding: 16px 16px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.coffret-name {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.coffret-name a {
+  color: #3a3a3a;
+  transition: color 0.2s ease;
+}
+.coffret-name a:hover {
+  color: rgb(var(--brand-primary));
+}
+.coffret-price {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(var(--brand-primary));
+}
+.coffret-add {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: none;
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.coffret-add:hover {
+  background: rgb(var(--brand-hover));
+}
+
+@media (max-width: 1024px) {
+  .coffret-card {
+    flex-basis: calc((100% - 2 * 26px) / 3);
+  }
+}
+@media (max-width: 767px) {
+  .coffret-card {
+    flex-basis: calc((100% - 26px) / 2);
+  }
+}
+@media (max-width: 575px) {
+  .coffret-card {
+    flex-basis: 78%;
+  }
+}
+
+.coffret-oos-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+.coffret-add:disabled {
+  background: #d8c7cb;
+  cursor: not-allowed;
+}

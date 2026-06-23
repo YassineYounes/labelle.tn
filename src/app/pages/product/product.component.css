@@ -808,3 +808,126 @@
     flex-basis: 78%;
   }
 }
+
+/* Brand badge above the product title */
+.product-brand {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  padding: 5px 14px 5px 5px;
+  border: 1px solid #f0e0e4;
+  border-radius: 50px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.product-brand:hover {
+  border-color: rgb(var(--brand-primary));
+  box-shadow: 0 4px 14px rgba(219, 150, 161, 0.18);
+}
+.product-brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  mix-blend-mode: multiply;
+}
+.product-brand-initial {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--brand-primary));
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+.product-brand-name {
+  font-family: Jost, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #3a3a3a;
+  transition: color 0.2s ease;
+}
+.product-brand:hover .product-brand-name {
+  color: rgb(var(--brand-primary));
+}
+
+/* "Also available in these coffrets" cross-links */
+.product-bundles {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid #f0e0e4;
+  border-radius: 12px;
+  background: #fdf8f9;
+}
+.product-bundles-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+.product-bundles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.product-bundle-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid #f0e9eb;
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.product-bundle-link:hover {
+  border-color: rgb(var(--brand-primary));
+  box-shadow: 0 4px 14px rgba(219, 150, 161, 0.16);
+}
+.product-bundle-thumb {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f7f5f6;
+  border: 1px solid #eee;
+}
+.product-bundle-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.product-bundle-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3a3a3a;
+}
+.product-bundle-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(var(--brand-primary));
+  white-space: nowrap;
+}
+.product-bundle-arrow {
+  color: #c9b8bc;
+  flex-shrink: 0;
+}
+.product-bundle-link:hover .product-bundle-arrow {
+  color: rgb(var(--brand-primary));
+}

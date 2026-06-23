@@ -42,6 +42,10 @@ export interface Product {
   slug?: string;
   /** Original price shown struck-through when a promo price is active */
   oldPrice?: string;
+  /** Brand of the product (name + link target), when set in the back-office. */
+  brand?: { name: string; slug: string; logo: string | null };
+  /** Published coffrets that include this product (product page cross-links). */
+  bundles?: { name: string; slug: string; priceLabel: string; cover: string | null }[];
   /** True when this cart line represents a coffret (bundle), not a product. */
   isBundle?: boolean;
   /** The coffret id, when isBundle is true (used at checkout). */

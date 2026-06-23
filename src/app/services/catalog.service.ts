@@ -20,6 +20,8 @@ interface CardDto {
 
 interface ProductDto extends CardDto {
   reference: string;
+  brandInfo: { name: string; slug: string; logo: string | null } | null;
+  bundles: { name: string; slug: string; price: number; cover: string | null }[];
   shortDescription: string | null;
   description: string | null;
   images: { path: string; alt: string | null; isCover: boolean }[];
@@ -83,6 +85,9 @@ export interface Bundle {
   cover: string;
   photos: string[];
   itemCount: number;
+  /** Coffrets assemblable from current stock; 0 means out of stock. */
+  availableQuantity: number;
+  inStock: boolean;
   items?: { name: string; slug: string; image: string | null; quantity: number }[];
 }
 
@@ -191,6 +196,8 @@ export class CatalogService {
       cover: this.asset(b.cover),
       photos: (b.photos ?? []).map((p: string) => this.asset(p)),
       itemCount: b.itemCount ?? 0,
+      availableQuantity: b.availableQuantity ?? 0,
+      inStock: b.inStock ?? (b.availableQuantity ?? 0) > 0,
       items: (b.items ?? []).map((i: any) => ({
         name: i.name,
         slug: i.slug,
@@ -257,6 +264,19 @@ export class CatalogService {
       oldPrice: dto.promoPrice != null ? this.formatPrice(dto.price) : undefined,
       inStock: dto.inStock,
       reference: detail.reference ?? '',
+      brand: detail.brandInfo
+        ? {
+            name: detail.brandInfo.name,
+            slug: detail.brandInfo.slug,
+            logo: detail.brandInfo.logo ? this.asset(detail.brandInfo.logo) : null,
+          }
+        : undefined,
+      bundles: detail.bundles?.map((b) => ({
+        name: b.name,
+        slug: b.slug,
+        priceLabel: this.formatPrice(b.price),
+        cover: b.cover ? this.asset(b.cover) : null,
+      })),
       stock: dto.stock,
       shortDescription: this.toLines(detail.shortDescription),
       description: this.toLines(detail.description),

@@ -1,0 +1,80 @@
+.reassurance-bar {
+  border-top: 1px solid #f2d5dc;
+  border-bottom: 1px solid #f2d5dc;
+  background: #fbe6eb;
+  margin: 22px 0;
+}
+
+.reassurance-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.reassurance-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  position: relative;
+}
+.reassurance-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 22%;
+  height: 56%;
+  width: 1px;
+  background: #f0e0e4;
+}
+
+.reassurance-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: rgb(var(--brand-primary));
+  border: 1px solid #f3e3e7;
+}
+
+.reassurance-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+.reassurance-text strong {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+.reassurance-text small {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 991px) {
+  .reassurance-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .reassurance-item:nth-child(2)::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .reassurance-list {
+    grid-template-columns: 1fr;
+  }
+  .reassurance-item::after {
+    display: none;
+  }
+  .reassurance-item:not(:last-child) {
+    border-bottom: 1px solid #f3e8eb;
+  }
+}
