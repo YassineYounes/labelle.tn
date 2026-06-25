@@ -1,0 +1,16 @@
+# Angular SPA on Apache: serve real files, otherwise fall back to index.html
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Serve existing files and directories as-is
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Everything else routes to the app shell (client-side routing)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Make index.html the directory default
+DirectoryIndex index.html
