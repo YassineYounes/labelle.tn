@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 import { Product } from '../../data/site-data';
-import { Bundle, CategoryPage, CatalogService } from '../../services/catalog.service';
+import { Bundle, CategoryFacets, CategoryPage, CatalogService } from '../../services/catalog.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 import { CartService } from '../../services/cart.service';
 
@@ -76,24 +76,57 @@ export class CategoryComponent {
     () => SORT_OPTIONS.find((o) => o.key === this.sortKey())?.label ?? 'Pertinence',
   );
 
+  // ----- Filters (kept in the URL so they survive sort/pagination) -----
+  selectedBrands = computed<string[]>(() => {
+    const raw = this.queryParams()?.get('brands') ?? '';
+    return raw ? raw.split(',').filter(Boolean) : [];
+  });
+  minPrice = computed(() => this.queryParams()?.get('min') ?? '');
+  maxPrice = computed(() => this.queryParams()?.get('max') ?? '');
+  inStock = computed(() => this.queryParams()?.get('stock') === '1');
+  hasActiveFilters = computed(
+    () => this.selectedBrands().length > 0 || !!this.minPrice() || !!this.maxPrice() || this.inStock(),
+  );
+
+  private filterKey = computed(() =>
+    JSON.stringify([this.selectedBrands(), this.minPrice(), this.maxPrice(), this.inStock()]),
+  );
+
   private data = toSignal(
     combineLatest([
       toObservable(this.catSlug),
       toObservable(this.page),
       toObservable(this.sortKey),
+      toObservable(this.filterKey),
     ]).pipe(
       switchMap(([slug, page, key]) =>
         slug
-          ? this.catalog.category(slug, page, API_SORT[key] ?? 'newest').pipe(
-              catchError(() => {
-                this.router.navigate(['/']);
-                return of(null);
-              }),
-            )
+          ? this.catalog
+              .category(slug, page, API_SORT[key] ?? 'newest', {
+                brands: this.selectedBrands(),
+                minPrice: this.minPrice(),
+                maxPrice: this.maxPrice(),
+                inStock: this.inStock(),
+              })
+              .pipe(
+                catchError(() => {
+                  this.router.navigate(['/']);
+                  return of(null);
+                }),
+              )
           : of(null),
       ),
     ),
     { initialValue: null as CategoryPage | null },
+  );
+
+  facets = computed<CategoryFacets>(
+    () => this.data()?.facets ?? { brands: [], priceRange: { min: 0, max: 0 } },
+  );
+  priceFloor = computed(() => Math.floor(this.facets().priceRange.min));
+  priceCeil = computed(() => Math.ceil(this.facets().priceRange.max));
+  showFilters = computed(
+    () => !this.isCoffret() && (this.facets().brands.length > 0 || this.facets().priceRange.max > 0),
   );
 
   category = computed<CategoryView>(() => {
@@ -186,5 +219,35 @@ export class CategoryComponent {
 
   setGrid(columns: number): void {
     this.gridColumns.set(columns);
+  }
+
+  toggleBrand(slug: string): void {
+    const set = new Set(this.selectedBrands());
+    if (set.has(slug)) {
+      set.delete(slug);
+    } else {
+      set.add(slug);
+    }
+    this.applyFilters({ brands: set.size ? [...set].join(',') : null });
+  }
+
+  toggleStock(checked: boolean): void {
+    this.applyFilters({ stock: checked ? '1' : null });
+  }
+
+  applyPrice(min: string, max: string): void {
+    this.applyFilters({ min: min.trim() || null, max: max.trim() || null });
+  }
+
+  clearFilters(): void {
+    this.applyFilters({ brands: null, min: null, max: null, stock: null });
+  }
+
+  private applyFilters(params: Record<string, string | null>): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { ...params, page: null },
+      queryParamsHandling: 'merge',
+    });
   }
 }

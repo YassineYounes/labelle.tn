@@ -52,6 +52,19 @@ export interface CategoryPage {
   total: number;
   page: number;
   pages: number;
+  facets: CategoryFacets;
+}
+
+export interface CategoryFacets {
+  brands: { name: string; slug: string }[];
+  priceRange: { min: number; max: number };
+}
+
+export interface CategoryFilters {
+  brands?: string[];
+  minPrice?: string;
+  maxPrice?: string;
+  inStock?: boolean;
 }
 
 export interface SearchResult {
@@ -134,11 +147,24 @@ export class CatalogService {
 
   // ---- Category & product pages ----
 
-  category(slug: string, page = 1, sort = 'newest'): Observable<CategoryPage> {
+  category(slug: string, page = 1, sort = 'newest', filters?: CategoryFilters): Observable<CategoryPage> {
+    const params: Record<string, string | number> = { page, sort };
+    if (filters?.brands?.length) {
+      params['brands'] = filters.brands.join(',');
+    }
+    if (filters?.minPrice) {
+      params['minPrice'] = filters.minPrice;
+    }
+    if (filters?.maxPrice) {
+      params['maxPrice'] = filters.maxPrice;
+    }
+    if (filters?.inStock) {
+      params['inStock'] = 1;
+    }
     return this.http
       .get<Omit<CategoryPage, 'products'> & { products: CardDto[] }>(
         `${this.api}/api/shop/category/${slug}`,
-        { params: { page, sort } },
+        { params },
       )
       .pipe(map((res) => ({ ...res, products: res.products.map((c) => this.toProduct(c)) })));
   }

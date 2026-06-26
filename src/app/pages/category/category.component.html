@@ -11,23 +11,69 @@
 
 <div class="container">
   <div class="category-row">
-    <div class="left-column"></div>
+    <div class="left-column">
+      @if (showFilters()) {
+        <aside class="filters">
+          <div class="filters-head">
+            <h2 class="filters-title">Filtrer</h2>
+            @if (hasActiveFilters()) {
+              <button type="button" class="filters-clear" (click)="clearFilters()">Réinitialiser</button>
+            }
+          </div>
+
+          <div class="filter-group">
+            <h3 class="filter-group-title">Prix</h3>
+            <div class="filter-price">
+              <input type="number" class="filter-price-input" [value]="minPrice()" min="0"
+                     [placeholder]="priceFloor()" #minIn (change)="applyPrice(minIn.value, maxIn.value)">
+              <span class="filter-price-sep">–</span>
+              <input type="number" class="filter-price-input" [value]="maxPrice()" min="0"
+                     [placeholder]="priceCeil()" #maxIn (change)="applyPrice(minIn.value, maxIn.value)">
+              <span class="filter-price-unit">TND</span>
+            </div>
+          </div>
+
+          @if (facets().brands.length > 0) {
+            <div class="filter-group">
+              <h3 class="filter-group-title">Marques</h3>
+              <ul class="filter-list">
+                @for (b of facets().brands; track b.slug) {
+                  <li>
+                    <label class="filter-check">
+                      <input type="checkbox" [checked]="selectedBrands().includes(b.slug)"
+                             (change)="toggleBrand(b.slug)">
+                      <span>{{ b.name }}</span>
+                    </label>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          <div class="filter-group">
+            <h3 class="filter-group-title">Disponibilité</h3>
+            <label class="filter-check">
+              <input type="checkbox" [checked]="inStock()" (change)="toggleStock($any($event.target).checked)">
+              <span>En stock uniquement</span>
+            </label>
+          </div>
+
+          @if (category().children.length > 0) {
+            <div class="filter-group">
+              <h3 class="filter-group-title">Catégories</h3>
+              <ul class="filter-list">
+                @for (child of category().children; track child.link) {
+                  <li><a class="filter-subcat" [routerLink]="child.link">{{ child.name }}</a></li>
+                }
+              </ul>
+            </div>
+          }
+        </aside>
+      }
+    </div>
 
     <div class="content-column">
       <h3 class="bon-page-title">{{ category().name }}</h3>
-
-      @if (category().children.length > 0) {
-        <div class="subcategories">
-          <h2 class="subcategory-heading">Sous-catégories</h2>
-          <ul class="subcategories-list">
-            @for (child of category().children; track child.link) {
-              <li>
-                <a class="subcategory-name" [routerLink]="child.link">{{ child.name }}</a>
-              </li>
-            }
-          </ul>
-        </div>
-      }
 
       <div class="products-selection">
         <div class="total-products">
