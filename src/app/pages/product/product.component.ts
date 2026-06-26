@@ -10,6 +10,7 @@ import { WishlistService } from '../../services/wishlist.service';
 import { CatalogService } from '../../services/catalog.service';
 import { AccountService } from '../../services/account.service';
 import { Review, ReviewService, ReviewSummary } from '../../services/review.service';
+import { CallbackService } from '../../services/callback.service';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
 
 type Tab = 'description' | 'details' | 'comments';
@@ -91,6 +92,7 @@ export class ProductComponent {
   wishlist = inject(WishlistService);
   account = inject(AccountService);
   private reviewApi = inject(ReviewService);
+  private callbackApi = inject(CallbackService);
 
   quantity = signal(1);
   activeTab = signal<Tab>('description');
@@ -155,6 +157,14 @@ export class ProductComponent {
   submittingReview = signal(false);
   reviewError = signal<string | null>(null);
   reviewSaved = signal(false);
+
+  // ----- "Be called back" -----
+  callbackOpen = signal(false);
+  callbackName = '';
+  callbackPhone = '';
+  submittingCallback = signal(false);
+  callbackError = signal<string | null>(null);
+  callbackSaved = signal(false);
 
   reviewCount = computed(() => this.reviewData().count);
   averageRating = computed(() => this.reviewData().average);
@@ -227,6 +237,61 @@ export class ProductComponent {
         error: (err) => {
           this.submittingReview.set(false);
           this.reviewError.set(err?.error?.error ?? 'Une erreur est survenue.');
+        },
+      });
+  }
+
+  openCallback(): void {
+    // Prefill from the logged-in customer when we can.
+    const user = this.account.user();
+    if (user) {
+      this.callbackName = this.callbackName || `${user.firstName} ${user.lastName}`.trim();
+      this.callbackPhone = this.callbackPhone || user.phone || '';
+    }
+    this.callbackError.set(null);
+    this.callbackSaved.set(false);
+    this.callbackOpen.set(true);
+  }
+
+  closeCallback(): void {
+    this.callbackOpen.set(false);
+  }
+
+  submitCallback(): void {
+    const name = this.callbackName.trim();
+    const phone = this.callbackPhone.trim();
+    if (!name || !phone) {
+      this.callbackError.set('Veuillez indiquer votre nom et votre téléphone.');
+      return;
+    }
+    if ((phone.match(/\d/g) ?? []).length < 8) {
+      this.callbackError.set('Numéro de téléphone invalide.');
+      return;
+    }
+
+    const p = this.product();
+    this.submittingCallback.set(true);
+    this.callbackError.set(null);
+    this.callbackApi
+      .request({
+        name,
+        phone,
+        productId: p.id || undefined,
+        productName: p.name,
+        productSlug: this.slug() || undefined,
+        productUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.submittingCallback.set(false);
+          this.callbackSaved.set(true);
+          this.callbackName = '';
+          this.callbackPhone = '';
+          setTimeout(() => this.callbackOpen.set(false), 2500);
+        },
+        error: (err) => {
+          this.submittingCallback.set(false);
+          this.callbackError.set(err?.error?.error ?? 'Une erreur est survenue. Réessayez.');
         },
       });
   }

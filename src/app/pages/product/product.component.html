@@ -195,14 +195,14 @@
             </svg>
             Ajouter au panier
           </button>
-          <a class="btn-bonorder">
+          <button class="btn-bonorder" type="button" (click)="openCallback()">
             <svg width="18" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M14 14L12 19L7.99995 8L19 12L14 14ZM14 14L19 19M6.18818 1.23853L6.96464 4.1363M4.13618 6.96472L1.2384 6.18826M12.9497 3.05029L10.8283 5.17161M5.17158 10.8284L3.05026 12.9497"
                 stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             <span>Etre rappelé</span>
-          </a>
+          </button>
         </div>
       </div>
 
@@ -403,6 +403,48 @@
 
         <div class="lightbox-counter">{{ lightboxIndex() + 1 }} / {{ gallery().length }}</div>
       }
+    </div>
+  }
+
+  @if (callbackOpen()) {
+    <div class="callback-overlay" (click)="closeCallback()">
+      <div class="callback-modal" (click)="$event.stopPropagation()">
+        <button type="button" class="callback-close" (click)="closeCallback()" aria-label="Fermer">×</button>
+
+        @if (callbackSaved()) {
+          <div class="callback-success">
+            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 6L9 17L4 12" stroke="rgb(var(--brand-primary))" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <h3>Demande envoyée !</h3>
+            <p>Nous vous rappellerons très bientôt.</p>
+          </div>
+        } @else {
+          <h3 class="callback-title">Être rappelé</h3>
+          <p class="callback-sub">Laissez votre numéro et nous vous rappelons au sujet de
+            <strong>{{ product().name }}</strong>.</p>
+
+          <form (ngSubmit)="submitCallback()">
+            <label class="callback-field">
+              <span>Nom complet</span>
+              <input type="text" name="callbackName" [(ngModel)]="callbackName" placeholder="Votre nom" required>
+            </label>
+            <label class="callback-field">
+              <span>Téléphone</span>
+              <input type="tel" name="callbackPhone" [(ngModel)]="callbackPhone" placeholder="Ex : 20 123 456" required>
+            </label>
+
+            @if (callbackError()) {
+              <p class="callback-error">{{ callbackError() }}</p>
+            }
+
+            <button class="btn-primary callback-submit" type="submit" [disabled]="submittingCallback()">
+              {{ submittingCallback() ? 'Envoi…' : 'Demander un rappel' }}
+            </button>
+          </form>
+        }
+      </div>
     </div>
   }
 </div>
